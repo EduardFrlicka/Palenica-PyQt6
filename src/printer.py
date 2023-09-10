@@ -92,8 +92,8 @@ class OrderPrinter():
         printer = QtPrintSupport.QPrinter()
         painter = QtGui.QPainter()
 
-        printer.setOutputFileName("prueba.pdf")
-        printer.setOutputFormat(QtPrintSupport.QPrinter.OutputFormat.PdfFormat)
+        # printer.setOutputFileName("prueba.pdf")
+        # printer.setOutputFormat(QtPrintSupport.QPrinter.OutputFormat.PdfFormat)
 
         # printer.setPageMargins(0.0, 0.0, 0.0, 0.0, QtGui.QPageLayout.Unit.Point)
         # printer.setFullPage(True)
