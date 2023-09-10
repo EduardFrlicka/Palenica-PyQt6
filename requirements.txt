@@ -3,3 +3,4 @@ PyQt6==6.5.2
 PyQt6_sip==13.5.2
 SQLAlchemy==2.0.20
 tomli==2.0.1
+mysqlclient
