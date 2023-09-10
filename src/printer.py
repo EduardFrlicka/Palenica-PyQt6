@@ -17,22 +17,29 @@ WORD_WRAP_RIGHT.setWrapMode(QtGui.QTextOption.WrapMode.WordWrap)
 WORD_WRAP = QtGui.QTextOption()
 WORD_WRAP.setWrapMode(QtGui.QTextOption.WrapMode.WordWrap)
 
+VERTICAL_SPACER = 10
+HORIZONTAL_SPACER = 10
+
+TABLE_VERTICAL_MARGIN = 3
+TABLE_HORIZONTAL_MARGIN = 2
+
 
 class OrderPrinter():
 
     class TablePrint():
-        def __init__(self, painter: QtGui.QPainter, data: list[list[str]], rect: QtCore.QRectF, stretch: bool = True) -> None:
+        def __init__(self, painter: QtGui.QPainter, data: list[list[str]], rect: QtCore.QRectF, stretch: bool = True, title: str = None) -> None:
             super().__init__()
             self.painter = painter
             self.rows = data
             self.cols = list(zip(*data))
             self.rect = rect
             self.stretch = stretch
+            self.title = title
             self.fairDistribute()
 
         def fairDistribute(self):
             even_col_size = QtCore.QSizeF(
-                self.rect.width() / len(self.cols), self.rect.height())
+                self.rect.width() / len(self.cols) - 2*TABLE_HORIZONTAL_MARGIN, self.rect.height())
 
             self.cols_size = [max([self.painter.boundingRect(QtCore.QRectF(QtCore.QPointF(
             ), even_col_size), text, WORD_WRAP).size().width() for text in col]) for col in self.cols]
@@ -43,16 +50,31 @@ class OrderPrinter():
                     col + aditional_space for col in self.cols_size]
 
             self.rows_size = [max([self.painter.boundingRect(QtCore.QRectF(QtCore.QPointF(), QtCore.QSizeF(col_size, self.rect.height(
-            ))), text, WORD_WRAP).size().height() for text, col_size in zip(row, self.cols_size)]) for row in self.rows]
+            ))), text, WORD_WRAP).size().height()+2*TABLE_VERTICAL_MARGIN for text, col_size in zip(row, self.cols_size)]) for row in self.rows]
 
-            self.rect.setHeight(sum(self.rows_size))
+            if self.title:
+                self.rect.setHeight(
+                    sum(self.rows_size) + self.painter.boundingRect(self.rect, self.title, WORD_WRAP_LEFT).height())
+            else:
+                self.rect.setHeight(sum(self.rows_size))
 
         def paintCell(self, rect, text):
+            rect = QtCore.QRectF(rect)
             self.painter.drawRect(rect)
+            rect.setLeft(rect.left() + TABLE_HORIZONTAL_MARGIN)
+            rect.setRight(rect.right() - TABLE_HORIZONTAL_MARGIN)
+            rect.setTop(rect.top() + TABLE_VERTICAL_MARGIN)
+            rect.setBottom(rect.bottom() - TABLE_VERTICAL_MARGIN)
             self.painter.drawText(rect, text, WORD_WRAP_CENTER)
 
         def paint(self):
-            rect = QtCore.QRectF(self.rect.topLeft(), QtCore.QSizeF())
+            rect = QtCore.QRectF(self.rect)
+            if self.title:
+                title_rect = self.painter.boundingRect(
+                    self.rect, self.title, WORD_WRAP_LEFT)
+                self.painter.drawText(title_rect, self.title, WORD_WRAP_LEFT)
+                rect.setTop(rect.top() + title_rect.height())
+
             for row, row_size in zip(self.rows, self.rows_size):
                 rect.setHeight(row_size)
                 rect.setLeft(self.rect.left())
@@ -97,29 +119,44 @@ class OrderPrinter():
 
     def paint_order(self, painter: QtGui.QPainter, window: main_window.MainWindow, layout: QtCore.QRectF):
 
-        VERTICAL_SPACER = 5
-
         def print_header():
             nonlocal layout
 
-            contact = "www.palenicasmizany.sk\ntel.č 0905530298"
+            contact = "www.palenicasmizany.sk\ntel.č: 0905530298"
             address = "Pestovateľská pálenica, Hviezdoslavova 959, 053 11 Smižany\nJozef Szabó, Tatranská 20 053 11 Smižany"
             id_number = "IČO: 37179845\nIČ DPH: SK1026735831"
-            title = "VYSKLADŇOVACÍ LIST / DAŇOVÝ DOKLAD č.:"
+            title = f"VYSKLADŇOVACÍ LIST / DAŇOVÝ DOKLAD č.: {window.le_mark.text()}/{window.production_date.strftime(r'%Y')}/{window.cb_production_line.currentText()}"
 
             rect = QtCore.QRectF(layout)
-            height = max(painter.boundingRect(rect, contact, WORD_WRAP_LEFT).height(),
-                         painter.boundingRect(
-                             rect, address, WORD_WRAP_CENTER).height(),
-                         painter.boundingRect(rect, id_number, WORD_WRAP_RIGHT).height())
+            header_height = max(painter.boundingRect(rect, contact, WORD_WRAP_LEFT).height(),
+                                painter.boundingRect(
+                rect, address, WORD_WRAP_CENTER).height(),
+                painter.boundingRect(rect, id_number, WORD_WRAP_RIGHT).height())
 
-            rect.setHeight(height)
+            rect.setHeight(header_height)
 
             painter.drawText(rect, contact, WORD_WRAP_LEFT)
             painter.drawText(rect, address, WORD_WRAP_CENTER)
             painter.drawText(rect, id_number, WORD_WRAP_RIGHT)
 
-            layout.setTop(layout.top()+height)
+            rect.setTop(rect.bottom() + VERTICAL_SPACER)
+            rect.setBottom(layout.bottom())
+            save_font = QtGui.QFont(painter.font())
+
+            title_font = QtGui.QFont(save_font)
+            title_font.setBold(True)
+            title_font.setPointSize(save_font.pointSize()+3)
+            painter.setFont(title_font)
+
+            title_height = painter.boundingRect(
+                rect, title, WORD_WRAP_CENTER).height()
+            rect.setHeight(title_height)
+            painter.drawText(rect, title, WORD_WRAP_CENTER)
+
+            painter.setFont(save_font)
+
+            rect.setTop(layout.top())
+            layout.setTop(rect.bottom())
             return rect
 
         def print_footer():
@@ -163,7 +200,7 @@ class OrderPrinter():
 
             pass
 
-        def paint_customer(rect: QtCore.QRectF = QtCore.QRectF(layout)) -> QtCore.QRectF:
+        def paint_customer(rect: QtCore.QRectF) -> QtCore.QRectF:
 
             painter.drawLine(rect.topLeft(), rect.topRight())
 
@@ -238,82 +275,129 @@ class OrderPrinter():
         def paint_la(rect: QtCore.QRectF):
             pass
 
+        def paint_distillings(rect: QtCore.QRectF):
+            distillings_header = [
+                window.label_ferment_volume.text(),
+                window.label_ferment_type.text(),
+                window.label_alcohol_volume.text(),
+                window.label_alcohol_percentage.text(),
+                window.label_alcohol_temperature.text(),
+                window.label_alcohol_percentage_at_20.text(),
+                window.label_alcohol_volume_la.text(),
+                window.label_lower_tax.text(),
+                window.label_full_tax.text(),
+                window.label_sum_tax.text(),
+            ]
+
+            distillings = [[distilling.edit_ferment_volume.text(),
+                            distilling.edit_ferment_type.text(),
+                            distilling.edit_alcohol_volume.text(),
+                            distilling.edit_alcohol_percentage.text(),
+                            distilling.edit_alcohol_temperature.text(),
+                            distilling.edit_alcohol_percentage_at_20.text(),
+                            distilling.edit_alcohol_volume_la.text(),
+                            distilling.edit_lower_tax.text(),
+                            distilling.edit_full_tax.text(),
+                            distilling.edit_sum_tax.text(),
+                            ] for distilling in window.findChildren(main_window.DistillingInput)]
+
+            table_distillings = self.TablePrint(
+                painter, [distillings_header, *distillings], rect)
+            table_distillings.paint()
+
+            return table_distillings.rect
+
+        def paint_dilute(rect: QtCore.QRectF):
+            dilute_cols = window.diluteTable.columnCount()
+            dilute_rows = window.diluteTable.rowCount()
+            dilute_header = [window.diluteTable.horizontalHeaderItem(
+                i).text() for i in range(dilute_cols)]
+            dilute_cells = [[window.diluteTable.item(row, col).text(
+            ) for col in range(dilute_cols)]for row in range(dilute_rows)]
+
+            table_dilute = self.TablePrint(
+                painter, [dilute_header, *dilute_cells], rect, title="Riedenie v dcl na 1 liter liehu:")
+            table_dilute.paint()
+
+            return table_dilute.rect
+
+        def paint_costs(rect: QtCore.QRectF):
+            costs_cells = [
+                [window.label_service_cost.text(
+                ), window.rle_service_cost.lineEdit.text()],
+                [window.label_operating_costs.text(
+                ), window.rle_operating_costs.lineEdit.text()],
+                [window.label_cost_per_liter.text(), window.le_cost_per_liter.text()],
+                [window.label_cost_sum.text(), window.le_cost_sum.text()],
+                [window.label_tax_base.text(), window.le_tax_base.text()],
+                [window.label_tax.text(), window.le_tax_vat.text()],
+            ]
+
+            costs_table = self.TablePrint(
+                painter, costs_cells, rect, title=" ")
+            costs_table.paint()
+
+            return costs_table.rect
+
+        def paint_notes(rect: QtCore.QRectF):
+            title="Iné záznamy"
+            text = window.notes.toPlainText()
+
+            title_rect = QtCore.QRectF(rect)
+            title_rect = painter.boundingRect(title_rect, title, WORD_WRAP_LEFT)
+            painter.drawText(title_rect,title, WORD_WRAP_LEFT)
+
+            notes_rect = QtCore.QRectF(rect)
+            notes_rect.setTop(title_rect.bottom())
+            
+            notes_rect.setLeft(notes_rect.left() + TABLE_HORIZONTAL_MARGIN)
+            notes_rect.setRight(notes_rect.right() - TABLE_HORIZONTAL_MARGIN)
+            notes_rect.setTop(notes_rect.top() + TABLE_VERTICAL_MARGIN)
+            notes_rect.setBottom(notes_rect.bottom() - TABLE_VERTICAL_MARGIN)
+            
+            notes_rect_height = painter.boundingRect(notes_rect, text, WORD_WRAP_LEFT).height()
+            notes_rect.setHeight(notes_rect_height)
+
+            painter.drawText(notes_rect, text, WORD_WRAP_LEFT)
+
+            notes_rect.setLeft(notes_rect.left() - TABLE_HORIZONTAL_MARGIN)
+            notes_rect.setRight(notes_rect.right() + TABLE_HORIZONTAL_MARGIN)
+            notes_rect.setTop(notes_rect.top() - TABLE_VERTICAL_MARGIN)
+            notes_rect.setBottom(notes_rect.bottom() + TABLE_VERTICAL_MARGIN)
+
+            painter.drawRect(notes_rect)
+
+            rect.setBottom(notes_rect.bottom())
+
+            return rect
+
+        # Layout constant shift
         layout.setBottomRight(layout.bottomRight() -
                               layout.topLeft() - layout.topLeft())
 
-        # rect = painter.boundingRect(layout.toRectF(
-        # ), 10 * "abcdefg hijklmnzfcs gvbhjnkms cfzvg bhkmfscgbh ",  WORD_WRAP)
-        # painter.drawRect(rect)
-        # painter.drawText(
-        #     rect, 10 * "abcdefg hijklmnzfcs gvbhjnkms cfzvg bhkmfscgbh ",  WORD_WRAP_CENTER)
-
         header_rect = print_header()
-        foote_rect = print_footer()
+        footer_rect = print_footer()
 
         customer_rect = paint_customer(QtCore.QRectF(layout))
 
-        distillings_header = [
-            window.label_ferment_volume.text(),
-            window.label_ferment_type.text(),
-            window.label_alcohol_volume.text(),
-            window.label_alcohol_percentage.text(),
-            window.label_alcohol_temperature.text(),
-            window.label_alcohol_percentage_at_20.text(),
-            window.label_alcohol_volume_la.text(),
-            window.label_lower_tax.text(),
-            window.label_full_tax.text(),
-            window.label_sum_tax.text(),
-        ]
+        distillings_rect = QtCore.QRectF(layout)
+        distillings_rect.setTop(customer_rect.bottom() + VERTICAL_SPACER)
+        distillings_rect = paint_distillings(distillings_rect)
 
-        distillings = [[distilling.edit_ferment_volume.text(),
-                        distilling.edit_ferment_type.text(),
-                        distilling.edit_alcohol_volume.text(),
-                        distilling.edit_alcohol_percentage.text(),
-                        distilling.edit_alcohol_temperature.text(),
-                        distilling.edit_alcohol_percentage_at_20.text(),
-                        distilling.edit_alcohol_volume_la.text(),
-                        distilling.edit_lower_tax.text(),
-                        distilling.edit_full_tax.text(),
-                        distilling.edit_sum_tax.text(),
-                        ] for distilling in window.findChildren(main_window.DistillingInput)]
+        dilute_rect = QtCore.QRectF(layout)
+        dilute_rect.setTop(distillings_rect.bottom() + VERTICAL_SPACER)
+        dilute_rect.setWidth(dilute_rect.size().width()/4)
+        dilute_rect = paint_dilute(dilute_rect)
 
-        rect = QtCore.QRectF(layout)
-        rect.setTop(customer_rect.bottom() + VERTICAL_SPACER)
+        costs_rect = QtCore.QRectF(layout)
+        costs_rect.setTop(distillings_rect.bottom() + VERTICAL_SPACER)
+        costs_rect.setLeft(costs_rect.left() + costs_rect.size().width()*2/3)
+        costs_rect = paint_costs(costs_rect)
 
-        table_distillings = self.TablePrint(
-            painter, [distillings_header, *distillings], rect)
-        table_distillings.paint()
-
-        rect = QtCore.QRectF(layout)
-        rect.setTop(table_distillings.rect.bottom())
-        rect.setRight(rect.right() - rect.size().width()*2/3)
-
-        dilute_cols = window.diluteTable.columnCount()
-        dilute_rows = window.diluteTable.rowCount()
-        dilute_header = [window.diluteTable.horizontalHeaderItem(
-            i).text() for i in range(dilute_cols)]
-        dilute_cells = [[window.diluteTable.item(row, col).text(
-        ) for col in range(dilute_cols)]for row in range(dilute_rows)]
-
-        table_dilute = self.TablePrint(
-            painter, [dilute_header, *dilute_cells], rect)
-        table_dilute.paint()
-
-        rect = QtCore.QRectF(layout)
-        rect.setTop(table_distillings.rect.bottom())
-        rect.setLeft(rect.left() + rect.size().width()*3/4)
-
-        costs_cells = [
-            [window.label_service_cost.text(), window.rle_service_cost.lineEdit.text()],
-            [window.label_operating_costs.text(
-            ), window.rle_operating_costs.lineEdit.text()],
-            [window.label_cost_per_liter.text(), window.le_cost_per_liter.text()],
-            [window.label_cost_sum.text(), window.le_cost_sum.text()],
-            [window.label_tax_base.text(), window.le_tax_base.text()],
-            [window.label_tax.text(), window.le_tax_vat.text()],
-        ]
-
-        costs_table = self.TablePrint(painter, costs_cells, rect)
-        costs_table.paint()
+        notes_rect = QtCore.QRectF(layout)
+        notes_rect.setTop(distillings_rect.bottom() + VERTICAL_SPACER)
+        notes_rect.setLeft(dilute_rect.right()+HORIZONTAL_SPACER)
+        notes_rect.setRight(costs_rect.left() - HORIZONTAL_SPACER)
+        notes_rect = paint_notes(notes_rect)
 
         pass

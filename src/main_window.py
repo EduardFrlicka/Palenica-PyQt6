@@ -8,6 +8,7 @@ from constants import SERVICE_COST_PER_LA, VAT_TAX, FULL_TAX, LOWER_TAX, DATE_FO
 from customer_select import CustomerSelectDialog
 from sqlalchemy.orm import Session
 from datetime import date
+import config
 import db
 import messages
 from alert import alert
@@ -113,31 +114,33 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             self.le_cost_per_liter.setText(f"{self.cost_per_liter:.2f}")
 
     def print_save(self):
-        if not self.save():
-            return
-        self.print()
+        if "save" in config.config["main_window"]["confirm_action"]:
+            if not self.save():
+                return
+        if "print" in config.config["main_window"]["confirm_action"]:
+            self.print()
         self.close()
 
     def save(self):
         if self.customer_handler.is_manual:
             return True
 
-        distilling_inputs = self.findChildren(DistillingInput)
+        distilling_inputs= self.findChildren(DistillingInput)
 
         with Session(db.engine) as session:
-            season = db.get_active_season(session)
+            season= db.get_active_season(session)
             if season is None:
                 alert(messages.ACTIVE_SEASON_NOT_FOUND)
                 return False
 
-            customer = db.get_customer(self.customer_handler.customer, session)
+            customer= db.get_customer(self.customer_handler.customer, session)
             if customer is None:
                 alert(messages.CUSTOMER_NOT_SELECTED)
                 return False
 
             print(f"\"{self.cb_production_line.currentText()}\"")
 
-            production_line = db.get_production_line(
+            production_line= db.get_production_line(
                 self.cb_production_line.currentText(), session)
             if production_line is None:
                 alert(messages.PRODUCTION_LINE_NOT_SELECTED)
@@ -147,24 +150,24 @@ class MainWindow(Ui_MainWindow, QMainWindow):
                 alert(messages.WRONG_DATE_FORMAT)
                 return False
 
-            distillings = []
+            distillings= []
 
             for distilling_input in distilling_inputs:
-                distilling = distilling_input.get_object()
+                distilling= distilling_input.get_object()
                 if distilling is None:
                     return False
                 distillings.append(distilling)
 
             self.customer_handler.save_number()
 
-            marked = session.query(db.Order).filter(
+            marked= session.query(db.Order).filter(
                 db.Order.mark == self.le_mark.text()).first()
             if marked:
                 alert(messages.NON_UNIQUE_MARK.format(marked.mark,
                       marked.production_date.strftime(DATE_FORMAT)))
                 return False
-            
-            order = db.Order(self.le_mark.text(), self.production_date, self.service_cost, self.tax_vat, self.tax_base,
+
+            order= db.Order(self.le_mark.text(), self.production_date, self.service_cost, self.tax_vat, self.tax_base,
                              self.cost_sum, self.operating_costs, distillings, customer, season, production_line)
 
             for distilling in distillings:
@@ -178,7 +181,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         from printer import OrderPrinter
         OrderPrinter().print_order(self)
 
-    @staticmethod
+    @ staticmethod
     def write_edit(edit: QLineEdit, value):
         if isinstance(value, float):
             edit.setText(f"{value:0.2f}")
