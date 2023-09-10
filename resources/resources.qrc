@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="png">
+    <file>trash-can.png</file>
+    <file>undo_icon.png</file>
+  </qresource>
+</RCC>

@@ -1,0 +1,8 @@
+WRONG_DATE_FORMAT = "Dátum je v zlom formáte"
+CUSTOMER_NOT_SELECTED = "Nezvolený zakazník"
+ACTIVE_SEASON_NOT_FOUND = "Interná chyba: Nieje aktívna sezóna"
+MISSING_INPUT = "Chýbajúci údaj: {}"
+ZERO_VALUE = "Hodnota {} je 0"
+INTERNAL_ERROR = "Interná chyba"
+NON_UNIQUE_MARK = "Číslo daňového dokladu {}, už existuje. Dátum výroby bol: {}"
+PRODUCTION_LINE_NOT_SELECTED = "Nezvolená kolóna"

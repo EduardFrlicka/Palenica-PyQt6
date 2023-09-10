@@ -1,0 +1,9 @@
+# Kvas moze byt prazdny
+# Ulozit do tabluky order ceny
+Pridat Kolony, poradove cislo
+suma slovom
+# aktualizovat la zakaznika
+# zmazat polia pri manualnom zakaznikovi
+# skryt la riadok pri manunalnom zakaznikovi
+la riadok: Mnozstvo pred palenim, mnozstvo po paleni, do limitu po paleni
+# shift selectu zakaznika

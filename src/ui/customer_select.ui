@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CustomerSelect</class>
+ <widget class="QDialog" name="CustomerSelect">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>647</width>
+    <height>433</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <layout class="QVBoxLayout" name="vertical_name">
+       <item>
+        <widget class="QLabel" name="label_name">
+         <property name="text">
+          <string>Meno a priezvisko:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="le_name"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="vertical_address">
+       <item>
+        <widget class="QLabel" name="label_address">
+         <property name="text">
+          <string>Adresa:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="le_address"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="vertical_birthday">
+       <item>
+        <widget class="QLabel" name="label_birthday">
+         <property name="text">
+          <string>Dátum nar.:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="le_birthday"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="vertical_phone_number">
+       <item>
+        <widget class="QLabel" name="label_phone_number">
+         <property name="text">
+          <string>Tel. číslo:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="le_phone_number"/>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QPushButton" name="add_new_customer_button">
+     <property name="text">
+      <string>Nový zákazník</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTableView" name="customer_table">
+     <property name="font">
+      <font>
+       <pointsize>13</pointsize>
+      </font>
+     </property>
+     <property name="sortingEnabled">
+      <bool>true</bool>
+     </property>
+     <attribute name="verticalHeaderVisible">
+      <bool>false</bool>
+     </attribute>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>customer_table</sender>
+   <signal>doubleClicked(QModelIndex)</signal>
+   <receiver>CustomerSelect</receiver>
+   <slot>customer_selected(QModelIndex)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>610</x>
+     <y>174</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>647</x>
+     <y>144</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>add_new_customer_button</sender>
+   <signal>clicked()</signal>
+   <receiver>CustomerSelect</receiver>
+   <slot>customer_created()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>372</x>
+     <y>96</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>642</x>
+     <y>56</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>le_name</sender>
+   <signal>textEdited(QString)</signal>
+   <receiver>CustomerSelect</receiver>
+   <slot>name_edited(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>123</x>
+     <y>56</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>162</x>
+     <y>10</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>le_address</sender>
+   <signal>textEdited(QString)</signal>
+   <receiver>CustomerSelect</receiver>
+   <slot>address_edited(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>317</x>
+     <y>50</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>325</x>
+     <y>37</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>le_birthday</sender>
+   <signal>textEdited(QString)</signal>
+   <receiver>CustomerSelect</receiver>
+   <slot>birthday_edited(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>464</x>
+     <y>55</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>481</x>
+     <y>48</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>le_phone_number</sender>
+   <signal>textEdited(QString)</signal>
+   <receiver>CustomerSelect</receiver>
+   <slot>phone_number_edited(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>622</x>
+     <y>65</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>642</x>
+     <y>17</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>customer_selected(QModelIndex)</slot>
+  <slot>customer_created()</slot>
+  <slot>name_edited(QString)</slot>
+  <slot>address_edited(QString)</slot>
+  <slot>phone_number_edited(QString)</slot>
+  <slot>birthday_edited(QString)</slot>
+ </slots>
+</ui>

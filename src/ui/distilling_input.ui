@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>distilling_input</class>
+ <widget class="QWidget" name="distilling_input">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1262</width>
+    <height>122</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <property name="spacing">
+    <number>6</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QLineEdit" name="edit_ferment_volume">
+     <property name="font">
+      <font>
+       <pointsize>15</pointsize>
+      </font>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="edit_ferment_type">
+     <property name="font">
+      <font>
+       <pointsize>15</pointsize>
+      </font>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="edit_alcohol_volume">
+     <property name="font">
+      <font>
+       <pointsize>15</pointsize>
+      </font>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="edit_alcohol_percentage">
+     <property name="font">
+      <font>
+       <pointsize>15</pointsize>
+      </font>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="edit_alcohol_temperature">
+     <property name="font">
+      <font>
+       <pointsize>15</pointsize>
+      </font>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="edit_alcohol_percentage_at_20">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>15</pointsize>
+      </font>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+     <property name="clearButtonEnabled">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="edit_alcohol_volume_la">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>15</pointsize>
+      </font>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="edit_lower_tax">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>15</pointsize>
+      </font>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="edit_full_tax">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>15</pointsize>
+      </font>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="edit_sum_tax">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>15</pointsize>
+      </font>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="delete_line_button">
+     <property name="font">
+      <font>
+       <pointsize>15</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="../../resources/resources.qrc">
+       <normaloff>:/png/trash-can.png</normaloff>:/png/trash-can.png</iconset>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="../../resources/resources.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>edit_ferment_volume</sender>
+   <signal>textEdited(QString)</signal>
+   <receiver>distilling_input</receiver>
+   <slot>update_values()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>78</x>
+     <y>60</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>82</x>
+     <y>18</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>edit_ferment_type</sender>
+   <signal>textEdited(QString)</signal>
+   <receiver>distilling_input</receiver>
+   <slot>update_values()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>200</x>
+     <y>52</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>216</x>
+     <y>16</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>edit_alcohol_volume</sender>
+   <signal>textEdited(QString)</signal>
+   <receiver>distilling_input</receiver>
+   <slot>update_values()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>339</x>
+     <y>56</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>353</x>
+     <y>14</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>edit_alcohol_percentage</sender>
+   <signal>textEdited(QString)</signal>
+   <receiver>distilling_input</receiver>
+   <slot>update_values()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>454</x>
+     <y>55</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>490</x>
+     <y>11</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>edit_alcohol_temperature</sender>
+   <signal>textEdited(QString)</signal>
+   <receiver>distilling_input</receiver>
+   <slot>update_values()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>567</x>
+     <y>59</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>622</x>
+     <y>7</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <signal>costs_updated()</signal>
+  <slot>update_values()</slot>
+ </slots>
+</ui>
