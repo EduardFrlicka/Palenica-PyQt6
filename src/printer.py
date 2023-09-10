@@ -165,9 +165,11 @@ class OrderPrinter():
             confirmation = "Svojím podpisom potvrdzujem prevzatie a zaplatenie nezávadného destilátu."
             sign_customer = "_____________________________\nPodpis pestovateľa"
             sign_employee = "_____________________________\nPodpis prevádzkovateľa"
-            cost_words = f"Spolu zaplatené slovom: {0}"
+            cost_words = f"Spolu zaplatené slovom: __________________________"
             production_date = f"Dátum výroby destilátu: {window.production_date.strftime(constants.DATE_FORMAT)}"
             pickup_date = "Dátum prevzatia destilátu: ______________________"
+
+            dates = f"{cost_words}\n\n{production_date}\n\n{pickup_date}"
 
             rect = QtCore.QRectF(layout)
             height = painter.boundingRect(
@@ -196,7 +198,17 @@ class OrderPrinter():
             painter.drawText(rect_customer, sign_customer, WORD_WRAP_CENTER)
             painter.drawText(rect_employee, sign_employee, WORD_WRAP_CENTER)
 
+
             rect.setTop(rect_customer.top())
+
+
+            dates_rect = QtCore.QRectF(layout)
+            dates_rect = painter.boundingRect(dates_rect, dates, WORD_WRAP_LEFT)
+            dates_rect.moveBottom(rect.top())
+
+            painter.drawText(dates_rect, dates, WORD_WRAP_LEFT)
+
+            rect.setTop(dates_rect.top())
 
             pass
 
@@ -291,9 +303,9 @@ class OrderPrinter():
 
             distillings = [[distilling.edit_ferment_volume.text(),
                             distilling.edit_ferment_type.text(),
-                            distilling.edit_alcohol_volume.text(),
-                            distilling.edit_alcohol_percentage.text(),
-                            distilling.edit_alcohol_temperature.text(),
+                            f"{distilling.alcohol_volume:.2f}",
+                            f"{distilling.alcohol_percentage:.2f}",
+                            f"{distilling.alcohol_temperature:.2f}",
                             distilling.edit_alcohol_percentage_at_20.text(),
                             distilling.edit_alcohol_volume_la.text(),
                             distilling.edit_lower_tax.text(),
