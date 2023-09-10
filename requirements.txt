@@ -1,4 +1,4 @@
-MySQL-python==1.2.5
+mysqlclient==2.2.0
 PyQt6==6.5.2
 PyQt6_sip==13.5.2
 SQLAlchemy==2.0.20

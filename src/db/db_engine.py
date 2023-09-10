@@ -2,7 +2,6 @@ import db
 from sqlalchemy.orm import Session
 from datetime import date, datetime
 import config
-import MySQLdb
 
 
 def engine_init():
