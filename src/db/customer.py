@@ -1,4 +1,4 @@
-from .base import Base
+from .base import Base, STRING_LEN
 from sqlalchemy import ForeignKey, Integer, String, Date, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List
@@ -10,7 +10,7 @@ class PhoneNumber(Base):
     __tablename__ = "phone_number"
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True)
-    number: Mapped[str] = mapped_column(String)
+    number: Mapped[str] = mapped_column(String(STRING_LEN))
     customer_id: Mapped[int] = mapped_column(ForeignKey("customer.id"))
     customer: Mapped["Customer"] = relationship(back_populates="phone_numbers")
 
@@ -24,8 +24,8 @@ class Customer(Base):
     __tablename__ = "customer"
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String)
-    address: Mapped[str] = mapped_column(String)
+    name: Mapped[str] = mapped_column(String(STRING_LEN))
+    address: Mapped[str] = mapped_column(String(STRING_LEN))
     birthday: Mapped[date] = mapped_column(Date)
     phone_numbers: Mapped[List["PhoneNumber"]
                           ] = relationship(back_populates="customer")

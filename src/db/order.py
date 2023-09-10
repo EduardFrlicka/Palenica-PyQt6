@@ -1,4 +1,4 @@
-from .base import Base
+from .base import Base, STRING_LEN
 from sqlalchemy import ForeignKey, Integer, String, Date, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Any, List
@@ -11,7 +11,7 @@ class Order(Base):
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True)
 
-    mark: Mapped[str] = mapped_column(String, unique=True)
+    mark: Mapped[str] = mapped_column(String(STRING_LEN), unique=True)
 
     production_date: Mapped[date] = mapped_column(Date)
     service_cost: Mapped[float] = mapped_column(Float)

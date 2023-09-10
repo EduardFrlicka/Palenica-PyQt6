@@ -1,14 +1,23 @@
 import db
 from sqlalchemy.orm import Session
 from datetime import date, datetime
+import config
+import MySQLdb
 
 
 def engine_init():
     from sqlalchemy import create_engine, URL
 
-    # db_url = URL.create("mysql+mysqldb", "if0_34945168", "XvuuVH:3d6WK7^H",
-    #                     "sql110.infinityfree.com", 3306, "if0_34945168_palenica_smizany")
-    db_url = URL.create("sqlite", None, None, None, None, "palenica.db")
+    db_url = URL.create(
+        config.config["database"]["engine"],
+        config.config["database"]["user"],
+        config.config["database"]["password"],
+        config.config["database"]["host"],
+        config.config["database"]["port"],
+        config.config["database"]["path"],
+    )
+
+    # db_url = URL.create("sqlite", None, None, None, None, "palenica.db")
     return create_engine(db_url)
 
 

@@ -113,8 +113,8 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             self.le_cost_per_liter.setText(f"{self.cost_per_liter:.2f}")
 
     def print_save(self):
-        # if not self.save():
-        #     return
+        if not self.save():
+            return
         self.print()
         self.close()
 
@@ -162,7 +162,8 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             if marked:
                 alert(messages.NON_UNIQUE_MARK.format(marked.mark,
                       marked.production_date.strftime(DATE_FORMAT)))
-
+                return False
+            
             order = db.Order(self.le_mark.text(), self.production_date, self.service_cost, self.tax_vat, self.tax_base,
                              self.cost_sum, self.operating_costs, distillings, customer, season, production_line)
 
