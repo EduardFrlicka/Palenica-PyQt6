@@ -8,12 +8,12 @@ def engine_init():
     from sqlalchemy import create_engine, URL
 
     db_url = URL.create(
-        config.config["database"]["engine"],
-        config.config["database"]["user"],
-        config.config["database"]["password"],
-        config.config["database"]["host"],
-        config.config["database"]["port"],
-        config.config["database"]["path"],
+        config.config["database"].get("engine"),
+        config.config["database"].get("user"),
+        config.config["database"].get("password"),
+        config.config["database"].get("host"),
+        config.config["database"].get("port"),
+        config.config["database"].get("path"),
     )
 
     # db_url = URL.create("sqlite", None, None, None, None, "palenica.db")

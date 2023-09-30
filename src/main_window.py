@@ -18,6 +18,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+        self.label_year.setText(f"/{date.today().year}")
         self.date_reset()
         self.add_distillating_input()
         self.label_lower_tax.setText(
@@ -125,22 +126,20 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         if self.customer_handler.is_manual:
             return True
 
-        distilling_inputs= self.findChildren(DistillingInput)
+        distilling_inputs = self.findChildren(DistillingInput)
 
         with Session(db.engine) as session:
-            season= db.get_active_season(session)
+            season = db.get_active_season(session)
             if season is None:
                 alert(messages.ACTIVE_SEASON_NOT_FOUND)
                 return False
 
-            customer= db.get_customer(self.customer_handler.customer, session)
+            customer = db.get_customer(self.customer_handler.customer, session)
             if customer is None:
                 alert(messages.CUSTOMER_NOT_SELECTED)
                 return False
 
-            print(f"\"{self.cb_production_line.currentText()}\"")
-
-            production_line= db.get_production_line(
+            production_line = db.get_production_line(
                 self.cb_production_line.currentText(), session)
             if production_line is None:
                 alert(messages.PRODUCTION_LINE_NOT_SELECTED)
@@ -150,24 +149,22 @@ class MainWindow(Ui_MainWindow, QMainWindow):
                 alert(messages.WRONG_DATE_FORMAT)
                 return False
 
-            distillings= []
+            distillings = []
 
             for distilling_input in distilling_inputs:
-                distilling= distilling_input.get_object()
+                distilling = distilling_input.get_object()
                 if distilling is None:
                     return False
                 distillings.append(distilling)
 
-            self.customer_handler.save_number()
+            # marked = session.query(db.Order).join(db.ProductionLine, db.Order.production_line_id == db.ProductionLine.id).filter(
+            #     db.Order.mark == self.le_mark.text()).filter(db.ProductionLine == production_line).first()
+            # if marked:
+            #     alert(messages.NON_UNIQUE_MARK.format(marked.mark,
+            #           marked.production_date.strftime(DATE_FORMAT)))
+            #     return False
 
-            marked= session.query(db.Order).filter(
-                db.Order.mark == self.le_mark.text()).first()
-            if marked:
-                alert(messages.NON_UNIQUE_MARK.format(marked.mark,
-                      marked.production_date.strftime(DATE_FORMAT)))
-                return False
-
-            order= db.Order(self.le_mark.text(), self.production_date, self.service_cost, self.tax_vat, self.tax_base,
+            order = db.Order(self.le_mark.text(), self.production_date, self.service_cost, self.tax_vat, self.tax_base,
                              self.cost_sum, self.operating_costs, distillings, customer, season, production_line)
 
             for distilling in distillings:

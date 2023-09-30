@@ -99,8 +99,8 @@ class OrderPrinter():
         # printer.setFullPage(True)
         # margin = printer.(QPageLayout.Unit.Point)
 
-        printer.setPageSize(QtGui.QPageSize(QtGui.QPageSize.PageSizeId.A5))
-        printer.setPageOrientation(QtGui.QPageLayout.Orientation.Landscape)
+        printer.setPageSize(QtGui.QPageSize(QtGui.QPageSize.PageSizeId.A4))
+        printer.setPageOrientation(QtGui.QPageLayout.Orientation.Portrait)
         printer.setCopyCount(2)
         printer.setPageMargins(QtCore.QMarginsF(
             4.0, 4.0, 4.0, 4.0), QtGui.QPageLayout.Unit.Point)
@@ -113,8 +113,9 @@ class OrderPrinter():
 
         # painter.setBrush(QtGui.QColorConstants.White)
 
-        self.paint_order(painter, window, printer.pageLayout(
-        ).paintRectPixels(printer.resolution()).toRectF())
+        layout = printer.pageLayout().paintRectPixels(printer.resolution()).toRectF()
+        layout.setHeight(layout.height()/2)
+        self.paint_order(painter, window, layout)
         painter.end()
 
     def paint_order(self, painter: QtGui.QPainter, window: main_window.MainWindow, layout: QtCore.QRectF):

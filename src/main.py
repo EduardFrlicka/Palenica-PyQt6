@@ -4,7 +4,14 @@ from PyQt6.QtWidgets import QApplication
 from main_window import MainWindow
 import db
 import sys
-from datetime import datetime
+import updater
+
+updater.update()
+
+# db.drop_all()
+# db.create_all()
+# db.populate()
+
 
 app = QApplication(sys.argv)
 main_window = MainWindow()

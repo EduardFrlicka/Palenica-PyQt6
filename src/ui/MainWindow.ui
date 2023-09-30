@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1408</width>
-    <height>770</height>
+    <height>599</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,7 +20,10 @@
       <item>
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>TextLabel</string>
+         <string>Číslo dokladu:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
@@ -35,9 +38,22 @@
        </widget>
       </item>
       <item>
+       <widget class="QLabel" name="label_year">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>TextLabel</string>
+         <string>Kolóna:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
@@ -73,7 +89,7 @@
      </widget>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="6,1">
+     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="4,1">
       <item>
        <layout class="QVBoxLayout" name="main_vertical" stretch="0,0,0,0,0,0,0">
         <item>
@@ -88,7 +104,7 @@
            <widget class="QLabel" name="label_ferment_volume">
             <property name="font">
              <font>
-              <pointsize>13</pointsize>
+              <pointsize>11</pointsize>
              </font>
             </property>
             <property name="layoutDirection">
@@ -109,7 +125,7 @@
            <widget class="QLabel" name="label_ferment_type">
             <property name="font">
              <font>
-              <pointsize>13</pointsize>
+              <pointsize>11</pointsize>
              </font>
             </property>
             <property name="layoutDirection">
@@ -130,7 +146,7 @@
            <widget class="QLabel" name="label_alcohol_volume">
             <property name="font">
              <font>
-              <pointsize>13</pointsize>
+              <pointsize>11</pointsize>
              </font>
             </property>
             <property name="layoutDirection">
@@ -151,7 +167,7 @@
            <widget class="QLabel" name="label_alcohol_percentage">
             <property name="font">
              <font>
-              <pointsize>13</pointsize>
+              <pointsize>11</pointsize>
              </font>
             </property>
             <property name="layoutDirection">
@@ -172,7 +188,7 @@
            <widget class="QLabel" name="label_alcohol_temperature">
             <property name="font">
              <font>
-              <pointsize>13</pointsize>
+              <pointsize>11</pointsize>
              </font>
             </property>
             <property name="layoutDirection">
@@ -193,7 +209,7 @@
            <widget class="QLabel" name="label_alcohol_percentage_at_20">
             <property name="font">
              <font>
-              <pointsize>13</pointsize>
+              <pointsize>11</pointsize>
              </font>
             </property>
             <property name="layoutDirection">
@@ -214,7 +230,7 @@
            <widget class="QLabel" name="label_alcohol_volume_la">
             <property name="font">
              <font>
-              <pointsize>13</pointsize>
+              <pointsize>11</pointsize>
              </font>
             </property>
             <property name="layoutDirection">
@@ -235,7 +251,7 @@
            <widget class="QLabel" name="label_lower_tax">
             <property name="font">
              <font>
-              <pointsize>13</pointsize>
+              <pointsize>11</pointsize>
              </font>
             </property>
             <property name="layoutDirection">
@@ -256,7 +272,7 @@
            <widget class="QLabel" name="label_full_tax">
             <property name="font">
              <font>
-              <pointsize>13</pointsize>
+              <pointsize>11</pointsize>
              </font>
             </property>
             <property name="layoutDirection">
@@ -277,7 +293,7 @@
            <widget class="QLabel" name="label_sum_tax">
             <property name="font">
              <font>
-              <pointsize>13</pointsize>
+              <pointsize>11</pointsize>
              </font>
             </property>
             <property name="layoutDirection">
@@ -415,10 +431,16 @@
             <item>
              <widget class="QTextEdit" name="notes">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>36</height>
+               </size>
               </property>
              </widget>
             </item>
@@ -437,7 +459,7 @@
           <property name="sizeHint" stdset="0">
            <size>
             <width>20</width>
-            <height>40</height>
+            <height>20</height>
            </size>
           </property>
          </spacer>
@@ -460,13 +482,13 @@
              </sizepolicy>
             </property>
             <property name="inputMask">
-             <string>99.99.9999</string>
+             <string/>
             </property>
             <property name="text">
-             <string>..</string>
+             <string/>
             </property>
             <property name="cursorPosition">
-             <number>10</number>
+             <number>0</number>
             </property>
             <property name="placeholderText">
              <string/>
@@ -521,7 +543,7 @@
             </property>
             <property name="font">
              <font>
-              <pointsize>13</pointsize>
+              <pointsize>11</pointsize>
              </font>
             </property>
             <property name="mouseTracking">
@@ -558,7 +580,7 @@
             </property>
             <property name="font">
              <font>
-              <pointsize>13</pointsize>
+              <pointsize>11</pointsize>
              </font>
             </property>
             <property name="text">
@@ -592,7 +614,7 @@
             </property>
             <property name="font">
              <font>
-              <pointsize>13</pointsize>
+              <pointsize>11</pointsize>
              </font>
             </property>
             <property name="text">
@@ -651,7 +673,7 @@
             </property>
             <property name="font">
              <font>
-              <pointsize>13</pointsize>
+              <pointsize>11</pointsize>
              </font>
             </property>
             <property name="text">
@@ -694,7 +716,7 @@
             </property>
             <property name="font">
              <font>
-              <pointsize>13</pointsize>
+              <pointsize>11</pointsize>
              </font>
             </property>
             <property name="text">
@@ -753,7 +775,7 @@
             </property>
             <property name="font">
              <font>
-              <pointsize>13</pointsize>
+              <pointsize>11</pointsize>
              </font>
             </property>
             <property name="text">

@@ -51,13 +51,6 @@ class CustomerHandler(QWidget, Ui_CustomerHandler):
         self.la = 0
         self.la_changed.emit()
 
-    def save_number(self):
-        with Session(db.engine) as session:
-            number = self.cb_phone_number.currentText()
-            if not session.query(db.PhoneNumber).filter(db.PhoneNumber.number == number and db.PhoneNumber.customer == self.customer).count():
-                session.add(db.PhoneNumber(number, self.customer))
-                session.commit()
-
     def manual_customer_edit_change(self):
         pass
 
@@ -80,8 +73,8 @@ class CustomerHandler(QWidget, Ui_CustomerHandler):
                 self.la = 0
             else:
                 self.la = self.la[0]
-            self.phone_numbers = [num[0] for num in session.query(db.PhoneNumber.number).filter(
-                db.PhoneNumber.customer == customer).all()]
+            
+            
 
         self.le_address.setText(self.customer.address)
         self.le_birthday.setText(self.customer.birthday.strftime(DATE_FORMAT))
@@ -89,9 +82,10 @@ class CustomerHandler(QWidget, Ui_CustomerHandler):
         self.le_la_before.setText(f"{self.la:.2f}")
 
         self.cb_phone_number.clear()
-        self.cb_phone_number.addItems(self.phone_numbers)
+        self.cb_phone_number.addItem(self.customer.phone_number)
+        self.cb_phone_number.setEditText(self.customer.phone_number)
 
-        self.completer = QCompleter(self.phone_numbers)
+        self.completer = QCompleter([self.customer.phone_number])
         self.cb_phone_number.setCompleter(self.completer)
 
         self.la_changed.emit()

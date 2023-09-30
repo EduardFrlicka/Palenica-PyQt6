@@ -11,7 +11,7 @@ class Order(Base):
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True)
 
-    mark: Mapped[str] = mapped_column(String(STRING_LEN), unique=True)
+    mark: Mapped[str] = mapped_column(String(STRING_LEN))
 
     production_date: Mapped[date] = mapped_column(Date)
     service_cost: Mapped[float] = mapped_column(Float)

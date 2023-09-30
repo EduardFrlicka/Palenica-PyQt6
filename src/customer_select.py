@@ -79,13 +79,10 @@ class CustomerModelView(QAbstractTableModel):
     def __init__(self, parent: QObject | None = ...) -> None:
         super().__init__(parent)
         with Session(db.engine) as session:
-            self.customers = list(session.query(db.Customer.id, db.Customer.name, db.Customer.address, db.Customer.birthday, func.sum(db.Distilling.alcohol_volume_la), db.Customer.phone_numbers).outerjoin(
-                db.Order, db.Customer.id == db.Order.customer_id).outerjoin(db.Distilling, db.Distilling.order_id == db.Order.id).join(db.PhoneNumber, db.PhoneNumber.customer_id == db.Customer.id).group_by(db.Customer.id))
-
-            self.customers = [(row[0].id, row[0].name, row[0].address, row[0].birthday, row[1], "") for row in session.query(db.Customer, func.sum(
+            self.customers = [(row[0].id, row[0].name, row[0].address, row[0].birthday, row[1], row[0].phone_number) for row in session.query(db.Customer, func.sum(
                 db.Distilling.alcohol_volume_la)).outerjoin(db.Order, db.Customer.id == db.Order.customer_id).outerjoin(db.Distilling, db.Distilling.order_id == db.Order.id).group_by(db.Customer)]
         self._headers = ["id", "Meno a priezvisko",
-                         "Adresa", "Dátum nar.", "la", "Tel. čísla"]
+                         "Adresa", "Dátum nar.", "la", "Tel. číslo"]
 
     def data(self, index: QModelIndex, role: Qt.ItemDataRole) -> QVariant:
         if role == Qt.ItemDataRole.DisplayRole:
@@ -127,7 +124,7 @@ class CustomerSelectDialog(QDialog, Ui_CustomerSelect):
         self.filter_model.setSourceModel(self.customer_model)
         self.customer_table.setModel(self.filter_model)
         self.customer_table.resizeColumnsToContents()
-        # self.customer_table.setColumnHidden(0, True)
+        self.customer_table.setColumnHidden(0, True)
         date_delegate = DateDelegate(self.customer_table)
         self.customer_table.setItemDelegateForColumn(3, date_delegate)
         self.customer_table.sortByColumn(1, Qt.SortOrder.AscendingOrder)
