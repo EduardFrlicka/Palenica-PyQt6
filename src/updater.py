@@ -30,7 +30,7 @@ def _update():
     asset_url = find_asset_url("windows-latest.zip")
     download_file(asset_url, local_name)
     with zipfile.ZipFile(local_name, 'r') as zip_ref:
-        zip_ref.extractall("..")
+        zip_ref.extractall()
     save_current(get_latest())
 
 
