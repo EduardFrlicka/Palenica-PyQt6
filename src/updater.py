@@ -33,7 +33,7 @@ def _update():
     with zipfile.ZipFile(local_name, 'r') as zip_ref:
         zip_ref.extractall("new")
     save_current(get_latest())
-    subprocess.run(["start", "copy_update.bat"]) 
+    subprocess.run(["start", "copy_update.bat"], shell=True) 
 
 
 def find_asset_url(asset_name):
