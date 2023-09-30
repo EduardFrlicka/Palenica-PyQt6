@@ -4,6 +4,7 @@ import json
 import shutil
 import zipfile
 import os
+import subprocess
 
 RELEASE_URL = config["updater"].get("url")
 VERSION_FILE = "version.txt"
@@ -30,8 +31,9 @@ def _update():
     asset_url = find_asset_url("windows-latest.zip")
     download_file(asset_url, local_name)
     with zipfile.ZipFile(local_name, 'r') as zip_ref:
-        zip_ref.extractall()
+        zip_ref.extractall("new")
     save_current(get_latest())
+    subprocess.run(["start", "copy_update.bat"]) 
 
 
 def find_asset_url(asset_name):
