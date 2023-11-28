@@ -1,6 +1,13 @@
 from PyQt6.QtWidgets import QDialog, QStyledItemDelegate
 from ui_py.customer_select_ui import Ui_CustomerSelect
-from PyQt6.QtCore import QModelIndex, QAbstractTableModel, QObject, Qt, QVariant, QSortFilterProxyModel
+from PyQt6.QtCore import (
+    QModelIndex,
+    QAbstractTableModel,
+    QObject,
+    Qt,
+    QVariant,
+    QSortFilterProxyModel,
+)
 from PyQt6.QtGui import QShowEvent
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
@@ -79,14 +86,33 @@ class CustomerModelView(QAbstractTableModel):
     def __init__(self, parent: QObject | None = ...) -> None:
         super().__init__(parent)
         with Session(db.engine) as session:
-            self.customers = [(row[0].id, row[0].name, row[0].address, row[0].birthday, row[1], row[0].phone_number) for row in session.query(db.Customer, func.sum(
-                db.Distilling.alcohol_volume_la)).outerjoin(db.Order, db.Customer.id == db.Order.customer_id).outerjoin(db.Distilling, db.Distilling.order_id == db.Order.id).group_by(db.Customer)]
-        self._headers = ["id", "Meno a priezvisko",
-                         "Adresa", "Dátum nar.", "la", "Tel. číslo"]
+            self.customers = [
+                (
+                    row[0].id,
+                    row[0].name,
+                    row[0].address,
+                    row[0].birthday,
+                    row[1],
+                    row[0].phone_number,
+                )
+                for row in session.query(
+                    db.Customer, func.sum(db.Distilling.alcohol_volume_la)
+                )
+                .outerjoin(db.Order, db.Customer.id == db.Order.customer_id)
+                .outerjoin(db.Distilling, db.Distilling.order_id == db.Order.id)
+                .group_by(db.Customer)
+            ]
+        self._headers = [
+            "id",
+            "Meno a priezvisko",
+            "Adresa",
+            "Dátum nar.",
+            "la",
+            "Tel. číslo",
+        ]
 
     def data(self, index: QModelIndex, role: Qt.ItemDataRole) -> QVariant:
         if role == Qt.ItemDataRole.DisplayRole:
-
             row = self.customers[index.row()]
 
             cell = row[index.column()]
@@ -101,7 +127,10 @@ class CustomerModelView(QAbstractTableModel):
         return len(self._headers)
 
     def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
-        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
+        if (
+            orientation == Qt.Orientation.Horizontal
+            and role == Qt.ItemDataRole.DisplayRole
+        ):
             return self._headers[section]
         return super().headerData(section, orientation, role)
 
@@ -158,7 +187,8 @@ class CustomerSelectDialog(QDialog, Ui_CustomerSelect):
             return
 
         self.customer = db.Customer(
-            self.name, self.address, self.birthday, self.phone_number)
+            self.name, self.address, self.birthday, self.phone_number
+        )
         with Session(db.engine) as session:
             session.add(self.customer)
             session.commit()
@@ -175,8 +205,7 @@ class CustomerSelectDialog(QDialog, Ui_CustomerSelect):
 
     def birthday_edited(self, text: str):
         try:
-            self.birthday = datetime.strptime(
-                text.replace(" ", ""), DATE_FORMAT).date()
+            self.birthday = datetime.strptime(text.replace(" ", ""), DATE_FORMAT).date()
             self.filter_model.filterBirthday(self.birthday)
         except:
             self.filter_model.filterBirthday(None)

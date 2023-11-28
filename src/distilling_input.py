@@ -31,7 +31,8 @@ class DistillingInput(Ui_distilling_input, QWidget):
 
     def remove_self(self):
         layout_distilling_inputs = self.parent().findChild(
-            QVBoxLayout, name="layout_distilling_inputs")
+            QVBoxLayout, name="layout_distilling_inputs"
+        )
         layout_distilling_inputs.removeWidget(self)
         self.alcohol_volume_la = 0
         self.la_edited.emit()
@@ -49,20 +50,21 @@ class DistillingInput(Ui_distilling_input, QWidget):
             new_lower_tax = self.alcohol_volume_la * LOWER_TAX
         else:
             new_lower_tax = (LOWER_TAX_LA_LIMIT - self.customer_la) * LOWER_TAX
-            new_full_tax = (self.customer_la +
-                            self.alcohol_volume_la - LOWER_TAX_LA_LIMIT) * FULL_TAX
+            new_full_tax = (
+                self.customer_la + self.alcohol_volume_la - LOWER_TAX_LA_LIMIT
+            ) * FULL_TAX
 
-        if (self.lower_tax != new_lower_tax):
+        if self.lower_tax != new_lower_tax:
             tax_updated = True
             self.lower_tax = new_lower_tax
             self.write_edit(self.edit_lower_tax, self.lower_tax)
 
-        if (self.full_tax != new_full_tax):
+        if self.full_tax != new_full_tax:
             tax_updated = True
             self.full_tax = new_full_tax
             self.write_edit(self.edit_full_tax, self.full_tax)
 
-        if (tax_updated):
+        if tax_updated:
             self.sum_tax = self.full_tax + self.lower_tax
             self.write_edit(self.edit_sum_tax, self.sum_tax)
             self.tax_edited.emit()
@@ -72,16 +74,17 @@ class DistillingInput(Ui_distilling_input, QWidget):
             return
 
         self.alcohol_percentage_at_20 = self.normalize_percentage()
-        self.write_edit(self.edit_alcohol_percentage_at_20,
-                        self.alcohol_percentage_at_20*100)
+        self.write_edit(
+            self.edit_alcohol_percentage_at_20, self.alcohol_percentage_at_20 * 100
+        )
 
         new_alcohol_volume_la = round(
-            self.alcohol_percentage_at_20 * self.alcohol_volume, 2)
+            self.alcohol_percentage_at_20 * self.alcohol_volume, 2
+        )
 
-        if (new_alcohol_volume_la != self.alcohol_volume_la):
+        if new_alcohol_volume_la != self.alcohol_volume_la:
             self.alcohol_volume_la = new_alcohol_volume_la
-            self.write_edit(self.edit_alcohol_volume_la,
-                            self.alcohol_volume_la)
+            self.write_edit(self.edit_alcohol_volume_la, self.alcohol_volume_la)
             self.update_tax()
             self.la_edited.emit()
 
@@ -91,9 +94,9 @@ class DistillingInput(Ui_distilling_input, QWidget):
             edit.setText(f"{value:0.2f}")
 
     def normalize_percentage(self):
-        percentage = int(self.alcohol_percentage*10)
+        percentage = int(self.alcohol_percentage * 10)
         temperature = int(self.alcohol_temperature)
-        if (percentage < 0 or percentage > 1000 or temperature < 0 or temperature > 30):
+        if percentage < 0 or percentage > 1000 or temperature < 0 or temperature > 30:
             return 0.0
 
         result = TEMPERATURE_TABLE[percentage][temperature]
@@ -141,12 +144,11 @@ class DistillingInput(Ui_distilling_input, QWidget):
             self.alcohol_volume_la,
             self.lower_tax,
             self.full_tax,
-            self.sum_tax
+            self.sum_tax,
         )
 
     def collect_all(self) -> bool:
-        self.ferment_volume = self.collect_edit(
-            self.edit_ferment_volume, float)
+        self.ferment_volume = self.collect_edit(self.edit_ferment_volume, float)
         if self.ferment_volume is None:
             self.ferment_volume = 0
 
@@ -154,18 +156,17 @@ class DistillingInput(Ui_distilling_input, QWidget):
         if self.ferment_type is None:
             return False
 
-        self.alcohol_volume = self.collect_edit(
-            self.edit_alcohol_volume, float)
+        self.alcohol_volume = self.collect_edit(self.edit_alcohol_volume, float)
         if self.alcohol_volume is None:
             return False
 
-        self.alcohol_percentage = self.collect_edit(
-            self.edit_alcohol_percentage, float)
+        self.alcohol_percentage = self.collect_edit(self.edit_alcohol_percentage, float)
         if self.alcohol_percentage is None:
             return False
 
         self.alcohol_temperature = self.collect_edit(
-            self.edit_alcohol_temperature, float)
+            self.edit_alcohol_temperature, float
+        )
         if self.alcohol_temperature is None:
             return False
 

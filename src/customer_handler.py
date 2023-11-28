@@ -67,14 +67,18 @@ class CustomerHandler(QWidget, Ui_CustomerHandler):
     def load_customer(self, customer: db.Customer):
         self.customer = customer
         with Session(db.engine) as session:
-            self.la = session.query(func.sum(db.Distilling.alcohol_volume_la)).outerjoin(db.Order, db.Distilling.order_id == db.Order.id).outerjoin(
-                db.Customer, db.Customer.id == db.Order.customer_id).group_by(db.Customer.id).filter(db.Customer.id == customer.id).first()
+            self.la = (
+                session.query(func.sum(db.Distilling.alcohol_volume_la))
+                .outerjoin(db.Order, db.Distilling.order_id == db.Order.id)
+                .outerjoin(db.Customer, db.Customer.id == db.Order.customer_id)
+                .group_by(db.Customer.id)
+                .filter(db.Customer.id == customer.id)
+                .first()
+            )
             if self.la is None:
                 self.la = 0
             else:
                 self.la = self.la[0]
-            
-            
 
         self.le_address.setText(self.customer.address)
         self.le_birthday.setText(self.customer.birthday.strftime(DATE_FORMAT))
