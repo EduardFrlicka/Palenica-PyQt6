@@ -6,14 +6,13 @@ import db
 import sys
 import updater
 
-updater.update()
-
-# db.drop_all()
-# db.create_all()
-# db.populate()
-
 
 app = QApplication(sys.argv)
 main_window = MainWindow()
+
+updater.update()
+
 main_window.show()
 app.exec()
+
+exit()

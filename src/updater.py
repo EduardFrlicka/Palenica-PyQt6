@@ -5,6 +5,8 @@ import shutil
 import zipfile
 import os
 import subprocess
+import PyQt6.QtWidgets as QtWidgets
+import messages
 
 RELEASE_URL = config["updater"].get("url")
 VERSION_FILE = "version.txt"
@@ -27,12 +29,21 @@ def download_file(url, local_filename):
 
 
 def _update():
+    # show update dialog
+    msgBox = QtWidgets.QMessageBox()
+    msgBox.setText("Aktualizácia")
+    msgBox.setText(messages.UPDATE_IN_PROGRESS)
+    msgBox.setIcon(QtWidgets.QMessageBox.Icon.Information)
+    msgBox.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
+    msgBox.show()
+
     local_name = f"{latest_json['tag_name']}.zip"
     asset_url = find_asset_url("windows-latest.zip")
     download_file(asset_url, local_name)
     with zipfile.ZipFile(local_name, 'r') as zip_ref:
         zip_ref.extractall("new")
     save_current(get_latest())
+    msgBox.close()
     subprocess.run(["start", "copy_update.bat"], shell=True) 
 
 

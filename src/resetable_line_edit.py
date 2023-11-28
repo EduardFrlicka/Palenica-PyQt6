@@ -29,6 +29,8 @@ class ResetableLineEdit(Ui_ResetableLineEdit, QWidget):
 
     def collect(self, value_type: type):
         try:
+            if value_type is float:
+                return value_type(self.lineEdit.text().replace(",", "."))
             return value_type(self.lineEdit.text())
         except ValueError:
             return value_type()

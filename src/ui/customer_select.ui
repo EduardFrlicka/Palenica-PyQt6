@@ -20,13 +20,24 @@
       <layout class="QVBoxLayout" name="vertical_name">
        <item>
         <widget class="QLabel" name="label_name">
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>Meno a priezvisko:</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="le_name"/>
+        <widget class="QLineEdit" name="le_name">
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -34,13 +45,24 @@
       <layout class="QVBoxLayout" name="vertical_address">
        <item>
         <widget class="QLabel" name="label_address">
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>Adresa:</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="le_address"/>
+        <widget class="QLineEdit" name="le_address">
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -48,13 +70,24 @@
       <layout class="QVBoxLayout" name="vertical_birthday">
        <item>
         <widget class="QLabel" name="label_birthday">
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>Dátum nar.:</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="le_birthday"/>
+        <widget class="QLineEdit" name="le_birthday">
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -62,13 +95,24 @@
       <layout class="QVBoxLayout" name="vertical_phone_number">
        <item>
         <widget class="QLabel" name="label_phone_number">
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>Tel. číslo:</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="le_phone_number"/>
+        <widget class="QLineEdit" name="le_phone_number">
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>

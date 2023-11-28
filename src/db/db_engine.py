@@ -42,16 +42,16 @@ def populate(engine=engine):
     session.add(db.ProductionLine("B"))
 
     session.add(season)
-    for i in range(500):
-        customer = (db.Customer(f"Martin{i}", f"Kukucinova {(500-i)//10}",
-                                date(year=2000+i//300, month=(i//28) % 12 + 1, day=i % 28+1), "09045555555"))
-        session.add(customer)
-        for j in range(10):
-            distillings = [db.Distilling(
-                15, 15, 15, 15, 15, 15, 15, 15, 15, 15) for _ in range(2)]
-            map(session.add, distillings)
-            session.add(db.Order(f"{i}/{j}", date.today(), 0.0, 0.0,
-                        0.0, 0.0, 0.0, distillings, customer, season, line_a))
+    # for i in range(500):
+    #     customer = (db.Customer(f"Martin{i}", f"Kukucinova {(500-i)//10}",
+    #                             date(year=2000+i//300, month=(i//28) % 12 + 1, day=i % 28+1), "09045555555"))
+    #     session.add(customer)
+    #     for j in range(10):
+    #         distillings = [db.Distilling(
+    #             15, 15, 15, 15, 15, 15, 15, 15, 15, 15) for _ in range(2)]
+    #         map(session.add, distillings)
+    #         session.add(db.Order(f"{i}/{j}", date.today(), 0.0, 0.0,
+    #                     0.0, 0.0, 0.0, distillings, customer, season, line_a))
 
     session.commit()
     session.refresh(season)

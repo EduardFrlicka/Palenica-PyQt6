@@ -12,6 +12,7 @@ import config
 import db
 import messages
 from alert import alert
+from sqlalchemy.sql import func
 
 
 class MainWindow(Ui_MainWindow, QMainWindow):
@@ -21,14 +22,11 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.label_year.setText(f"/{date.today().year}")
         self.date_reset()
         self.add_distillating_input()
-        self.label_lower_tax.setText(
-            f"Suma spotrebnej dane {LOWER_TAX:.2f} €/la")
-        self.label_full_tax.setText(
-            f"Suma spotrebnej dane {FULL_TAX:.2f} €/la")
+        self.label_lower_tax.setText(f"Suma spotrebnej dane {LOWER_TAX:.2f} €/la")
+        self.label_full_tax.setText(f"Suma spotrebnej dane {FULL_TAX:.2f} €/la")
         self.lineEdit_date.textEdited.connect(self.date_edit)
         self.reset_button_date.clicked.connect(self.date_reset)
-        self.button_add_distilling_input.clicked.connect(
-            self.add_distillating_input)
+        self.button_add_distilling_input.clicked.connect(self.add_distillating_input)
         self.setWindowModality(Qt.WindowModality.WindowModal)
         self.rle_operating_costs.setDefault(0.0)
 
@@ -47,10 +45,11 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
         distilling_inputs = self.findChildren(DistillingInput)
         for distilling_input in distilling_inputs:
-            if (distilling_input.customer_la != customer_la):
+            if distilling_input.customer_la != customer_la:
                 distilling_input.customer_la = customer_la
                 distilling_input.update_tax()
             customer_la += distilling_input.alcohol_volume_la
+        self.customer_handler.le_la_after.setText(f"{customer_la:.2f}")
 
     def update_dilute_table(self):
         distilling_inputs = self.findChildren(DistillingInput)
@@ -58,8 +57,9 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         dilute_targets = [0.48, 0.50, 0.52, 0.55]
         for row, distilling_inputin in enumerate(distilling_inputs):
             for col, dilute_target in enumerate(dilute_targets):
-                dcl = (distilling_inputin.alcohol_percentage_at_20 /
-                       dilute_target-1)*10
+                dcl = (
+                    distilling_inputin.alcohol_percentage_at_20 / dilute_target - 1
+                ) * 10
                 value = f"{dcl:0.1f}" if dcl > 0 else "-"
                 self.diluteTable.setItem(row, col, QTableWidgetItem(value))
 
@@ -67,7 +67,8 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.reset_button_date.show()
         try:
             self.production_date = datetime.strptime(
-                self.lineEdit_date.text().replace(" ", ""), DATE_FORMAT).date()
+                self.lineEdit_date.text().replace(" ", ""), DATE_FORMAT
+            ).date()
         except ValueError:
             self.production_date = None
 
@@ -91,27 +92,31 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             sum_taxes += distilling_input.sum_tax
             sum_la += distilling_input.alcohol_volume_la
 
-        self.rle_service_cost.setDefault(
-            max(0, sum_la * SERVICE_COST_PER_LA))
+        self.rle_service_cost.setDefault(max(0, sum_la * SERVICE_COST_PER_LA))
         self.service_cost = self.rle_service_cost.value
 
-        self.operating_costs = self.rle_operating_costs.value if self.rle_operating_costs.value else 0
+        self.operating_costs = (
+            self.rle_operating_costs.value if self.rle_operating_costs.value else 0.0
+        )
 
         # TODO round
         self.cost_sum = self.round_to_5_cent(
-            self.service_cost + self.operating_costs + sum_taxes)
+            self.service_cost + self.operating_costs + sum_taxes
+        )
         self.le_cost_sum.setText(f"{self.cost_sum:.2f}")
 
-        self.tax_base = round((self.service_cost +
-                               self.operating_costs) / (1+VAT_TAX), 2)
+        self.tax_base = round(
+            (self.service_cost + self.operating_costs) / (1 + VAT_TAX), 2
+        )
         self.le_tax_base.setText(f"{self.tax_base:.2f}")
 
-        self.tax_vat = round((self.service_cost +
-                              self.operating_costs) - self.tax_base, 2)
+        self.tax_vat = round(
+            (self.service_cost + self.operating_costs) - self.tax_base, 2
+        )
         self.le_tax_vat.setText(f"{self.tax_vat:0.2f}")
 
         if sum_la:
-            self.cost_per_liter = self.cost_sum / sum_la * 0.5
+            self.cost_per_liter = (sum_taxes + self.service_cost) / sum_la * 0.5
             self.le_cost_per_liter.setText(f"{self.cost_per_liter:.2f}")
 
     def print_save(self):
@@ -139,8 +144,27 @@ class MainWindow(Ui_MainWindow, QMainWindow):
                 alert(messages.CUSTOMER_NOT_SELECTED)
                 return False
 
+            la = (
+                session.query(func.sum(db.Distilling.alcohol_volume_la))
+                .outerjoin(db.Order, db.Distilling.order_id == db.Order.id)
+                .outerjoin(db.Customer, db.Customer.id == db.Order.customer_id)
+                .group_by(db.Customer.id)
+                .filter(db.Customer.id == customer.id)
+                .first()
+            )
+            if la is None:
+                la = 0
+            else:
+                la = la[0]
+
+            if la != self.customer_handler.la:
+                alert(messages.LA_NOT_MATCH.format(la, self.customer_handler.la))
+                self.customer_handler.load_customer(customer)
+                return False
+
             production_line = db.get_production_line(
-                self.cb_production_line.currentText(), session)
+                self.cb_production_line.currentText(), session
+            )
             if production_line is None:
                 alert(messages.PRODUCTION_LINE_NOT_SELECTED)
                 return False
@@ -164,8 +188,19 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             #           marked.production_date.strftime(DATE_FORMAT)))
             #     return False
 
-            order = db.Order(self.le_mark.text(), self.production_date, self.service_cost, self.tax_vat, self.tax_base,
-                             self.cost_sum, self.operating_costs, distillings, customer, season, production_line)
+            order = db.Order(
+                self.le_mark.text(),
+                self.production_date,
+                self.service_cost,
+                self.tax_vat,
+                self.tax_base,
+                self.cost_sum,
+                self.operating_costs,
+                distillings,
+                customer,
+                season,
+                production_line,
+            )
 
             for distilling in distillings:
                 session.add(distilling)
@@ -176,9 +211,10 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
     def print(self):
         from printer import OrderPrinter
+
         OrderPrinter().print_order(self)
 
-    @ staticmethod
+    @staticmethod
     def write_edit(edit: QLineEdit, value):
         if isinstance(value, float):
             edit.setText(f"{value:0.2f}")
