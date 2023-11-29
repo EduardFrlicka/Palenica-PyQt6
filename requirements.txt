@@ -1,6 +1,5 @@
 mysqlclient==2.2.0
 PyQt6==6.6.0
-PyQt6_sip==13.5.2
 Requests==2.31.0
 SQLAlchemy==2.0.20
 tomli==2.0.1
