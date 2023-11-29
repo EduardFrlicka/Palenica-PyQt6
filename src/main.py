@@ -15,4 +15,4 @@ updater.update()
 main_window.show()
 app.exec()
 
-exit()
+sys.exit()

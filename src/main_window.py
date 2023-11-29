@@ -29,6 +29,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.button_add_distilling_input.clicked.connect(self.add_distillating_input)
         self.setWindowModality(Qt.WindowModality.WindowModal)
         self.rle_operating_costs.setDefault(0.0)
+        self.setWindowState(Qt.WindowState.WindowMaximized)
 
     def add_distillating_input(self):
         new_distilling_input = DistillingInput(parent=self.centralwidget)
