@@ -57,16 +57,16 @@ class DistillingInput(Ui_distilling_input, QWidget):
         if self.lower_tax != new_lower_tax:
             tax_updated = True
             self.lower_tax = new_lower_tax
-            self.write_edit(self.edit_lower_tax, self.lower_tax)
+            self.write_tax_edit(self.edit_lower_tax, self.lower_tax)
 
         if self.full_tax != new_full_tax:
             tax_updated = True
             self.full_tax = new_full_tax
-            self.write_edit(self.edit_full_tax, self.full_tax)
+            self.write_tax_edit(self.edit_full_tax, self.full_tax)
 
         if tax_updated:
             self.sum_tax = self.full_tax + self.lower_tax
-            self.write_edit(self.edit_sum_tax, self.sum_tax)
+            self.write_tax_edit(self.edit_sum_tax, self.sum_tax)
             self.tax_edited.emit()
 
     def update_values(self):
@@ -92,6 +92,11 @@ class DistillingInput(Ui_distilling_input, QWidget):
     def write_edit(edit: QLineEdit, value):
         if isinstance(value, (float, int)):
             edit.setText(f"{value:0.2f}")
+
+    @staticmethod
+    def write_tax_edit(edit: QLineEdit, value):
+        if isinstance(value, (float, int)):
+            edit.setText(f"{value:0.3f}")
 
     def normalize_percentage(self):
         percentage = int(self.alcohol_percentage * 10)
