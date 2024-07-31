@@ -29,7 +29,7 @@ jobs:
       - name: Build with pyinstaller for ${{ matrix.config.os }}
         run: pyinstaller app.spec
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.config.os }}
           path: dist/main/
