@@ -3,11 +3,11 @@
 block_cipher = None
 
 a = Analysis(
-    ['src\\main.py', '.\\app.spec'],
+    ['src\\employee_app.py', '.\\employee_app.spec'],
     pathex=[],
     binaries=[],
     datas=[],
-    hiddenimports=[],
+    hiddenimports=[psycopg2],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -17,6 +17,7 @@ a = Analysis(
     cipher=block_cipher,
     noarchive=False,
 )
+
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
 exe = EXE(
