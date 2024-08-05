@@ -17,6 +17,7 @@ class Season(db.Base):
     def __init__(self, date_start: date, date_end: date):
         self.date_start = date_start
         self.date_end = date_end
+        
 
     def activate(self, session: Session):
         for season in session.query(Season).all():

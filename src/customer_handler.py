@@ -33,6 +33,7 @@ class CustomerHandler(QWidget, Ui_CustomerHandler):
         self.select_buttons.show()
         self.customer = None
         self.la = None
+        self.label_manual_customer.hide()
 
     def manual_customer(self):
         self.is_manual = True
@@ -50,6 +51,7 @@ class CustomerHandler(QWidget, Ui_CustomerHandler):
         self.select_buttons.hide()
         self.la = 0
         self.la_changed.emit()
+        self.label_manual_customer.show()
 
     def manual_customer_edit_change(self):
         pass

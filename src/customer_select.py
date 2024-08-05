@@ -96,10 +96,14 @@ class CustomerModelView(QAbstractTableModel):
                     row[0].phone_number,
                 )
                 for row in session.query(
-                    db.Customer, func.sum(db.Distilling.alcohol_volume_la)
+                    db.Customer,
+                    func.sum(
+                        func.IF(db.Season.active, db.Distilling.alcohol_volume_la, 0.0)
+                    ),
                 )
                 .outerjoin(db.Order, db.Customer.id == db.Order.customer_id)
                 .outerjoin(db.Distilling, db.Distilling.order_id == db.Order.id)
+                .outerjoin(db.Season, db.Season.id == db.Order.season_id)
                 .group_by(db.Customer)
             ]
         self._headers = [
