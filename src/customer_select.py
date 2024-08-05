@@ -178,17 +178,17 @@ class CustomerSelectDialog(QDialog, Ui_CustomerSelect):
 
     def customer_created(self):
         if self.name is None:
-            alert("name is missing")
+            alert("Chýba meno zákazníka")
             return
         if self.address is None:
-            alert("address is missing")
+            alert("Chýba adresa zákazníka")
             return
         if self.birthday is None:
-            alert("birthday is missing")
+            alert("Chýba dátum narodenia zákazníka")
             return
+
         if self.phone_number is None:
-            alert("phone_number is missing")
-            return
+            self.phone_number = ""
 
         self.customer = db.Customer(
             self.name, self.address, self.birthday, self.phone_number

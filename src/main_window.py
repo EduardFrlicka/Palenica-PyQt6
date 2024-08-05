@@ -121,12 +121,16 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             self.le_cost_per_liter.setText(f"{self.cost_per_liter:.2f}")
 
     def print_save(self):
+        self.button_Print.setEnabled(False)
         if "save" in config.config["main_window"]["confirm_action"]:
             if not self.save():
+                self.button_Print.setEnabled(True)
                 return
+            
         if "print" in config.config["main_window"]["confirm_action"]:
             self.print()
-        self.close()
+
+        self.button_Print.setEnabled(True)
 
     def save(self):
         if self.customer_handler.is_manual:
