@@ -12,6 +12,7 @@ import config
 import db
 import messages
 from alert import alert
+import calculations
 
 
 class MainWindow(Ui_MainWindow, QMainWindow):
@@ -52,15 +53,23 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.customer_handler.le_la_after.setText(f"{customer_la:.2f}")
 
     def update_dilute_table(self):
+        # self.diluteTable.setColumnCount(len(calculations.DILUTE_TARGETS))
+        # for col, target in enumerate(calculations.DILUTE_TARGETS):
+        #     self.diluteTable.setHorizontalHeaderItem(
+        #         col, QTableWidgetItem(f"{target*100:.0f}%")
+        #     )
         distilling_inputs = self.findChildren(DistillingInput)
         self.diluteTable.setRowCount(len(distilling_inputs))
-        dilute_targets = [0.48, 0.50, 0.52, 0.55]
-        for row, distilling_inputin in enumerate(distilling_inputs):
-            for col, dilute_target in enumerate(dilute_targets):
-                dcl = (
-                    distilling_inputin.alcohol_percentage_at_20 / dilute_target - 1
-                ) * 10
-                value = f"{dcl:0.1f}" if dcl > 0 else "-"
+
+        dilute_calculations = calculations.calculate_dillute_table(
+            [
+                distilling_input.alcohol_percentage_at_20
+                for distilling_input in distilling_inputs
+            ],
+        )
+
+        for row, dilute_row in enumerate(dilute_calculations):
+            for col, value in enumerate(dilute_row):
                 self.diluteTable.setItem(row, col, QTableWidgetItem(value))
 
     def date_edit(self):
