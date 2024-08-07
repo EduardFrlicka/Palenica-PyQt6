@@ -12,7 +12,6 @@ import config
 import db
 import messages
 from alert import alert
-from sqlalchemy.sql import func
 
 
 class MainWindow(Ui_MainWindow, QMainWindow):
@@ -126,7 +125,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             if not self.save():
                 self.button_Print.setEnabled(True)
                 return
-            
+
         if "print" in config.config["main_window"]["confirm_action"]:
             self.print()
 
@@ -149,18 +148,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
                 alert(messages.CUSTOMER_NOT_SELECTED)
                 return False
 
-            la = (
-                session.query(func.sum(db.Distilling.alcohol_volume_la))
-                .outerjoin(db.Order, db.Distilling.order_id == db.Order.id)
-                .outerjoin(db.Customer, db.Customer.id == db.Order.customer_id)
-                .group_by(db.Customer.id)
-                .filter(db.Customer.id == customer.id)
-                .first()
-            )
-            if la is None:
-                la = 0
-            else:
-                la = la[0]
+            la = db.get_customer_la(customer, session)
 
             if la != self.customer_handler.la:
                 alert(messages.LA_NOT_MATCH.format(la, self.customer_handler.la))
@@ -211,6 +199,8 @@ class MainWindow(Ui_MainWindow, QMainWindow):
                 session.add(distilling)
             session.add(order)
             session.commit()
+
+            return order
 
         return True
 

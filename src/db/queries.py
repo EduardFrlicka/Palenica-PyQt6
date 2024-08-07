@@ -1,4 +1,6 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import func
+from sqlalchemy import case
 import db
 
 
@@ -25,3 +27,30 @@ def get_production_line(line: int | str | db.Customer, session: Session = None):
             return session.query(db.ProductionLine).get(line.id)
         if isinstance(line, str):
             return session.query(db.ProductionLine).filter_by(name=line).first()
+
+
+def get_customer_la(customer: int | db.Customer, session: Session = None):
+    if session is None:
+        with Session(db.engine) as session:
+            return get_customer_la(customer, session)
+
+    customer_id = customer if isinstance(customer, int) else customer.id
+
+    la = (
+        session.query(
+            func.sum(
+                case(
+                    (db.Season.active, db.Distilling.alcohol_volume_la),
+                    else_=0.0,
+                )
+            )
+        )
+        .outerjoin(db.Order, db.Distilling.order_id == db.Order.id)
+        .outerjoin(db.Customer, db.Customer.id == db.Order.customer_id)
+        .outerjoin(db.Season, db.Season.id == db.Order.season_id)
+        .group_by(db.Customer.id)
+        .filter(db.Customer.id == customer.id)
+        .first()
+    )
+
+    return la[0] if la is not None else 0.0
