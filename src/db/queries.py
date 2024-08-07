@@ -35,22 +35,21 @@ def get_customer_la(customer: int | db.Customer, session: Session = None):
             return get_customer_la(customer, session)
 
     customer_id = customer if isinstance(customer, int) else customer.id
-
-    la = (
+    la = [
         session.query(
             func.sum(
                 case(
                     (db.Season.active, db.Distilling.alcohol_volume_la),
                     else_=0.0,
                 )
-            )
+            ),
+            db.Customer,
         )
-        .outerjoin(db.Order, db.Distilling.order_id == db.Order.id)
-        .outerjoin(db.Customer, db.Customer.id == db.Order.customer_id)
+        .outerjoin(db.Order, db.Customer.id == db.Order.customer_id)
+        .outerjoin(db.Distilling, db.Distilling.order_id == db.Order.id)
         .outerjoin(db.Season, db.Season.id == db.Order.season_id)
-        .group_by(db.Customer.id)
-        .filter(db.Customer.id == customer.id)
+        .group_by(db.Customer)
+        .where(db.Customer.id == customer_id)
         .first()
-    )
-
-    return la[0] if la is not None else 0.0
+    ]
+    return la[0][0] if la else 0.0
