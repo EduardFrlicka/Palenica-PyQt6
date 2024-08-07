@@ -11,7 +11,9 @@ import messages
 RELEASE_URL = config["updater"].get("url")
 VERSION_FILE = "version.txt"
 
-latest_json = json.loads(requests.api.get(RELEASE_URL).text)
+
+if config.get("update", True):
+    latest_json = json.loads(requests.api.get(RELEASE_URL).text)
 
 def update():
     if not config.get("update", True):
