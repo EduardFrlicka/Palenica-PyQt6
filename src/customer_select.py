@@ -11,6 +11,7 @@ from PyQt6.QtCore import (
 from PyQt6.QtGui import QShowEvent
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
+from sqlalchemy import case
 import db
 from datetime import datetime, date
 from constants import DATE_FORMAT
@@ -98,7 +99,10 @@ class CustomerModelView(QAbstractTableModel):
                 for row in session.query(
                     db.Customer,
                     func.sum(
-                        func.IF(db.Season.active, db.Distilling.alcohol_volume_la, 0.0)
+                        case(
+                            (db.Season.active, db.Distilling.alcohol_volume_la),
+                            else_=0.0,
+                        )
                     ),
                 )
                 .outerjoin(db.Order, db.Customer.id == db.Order.customer_id)
