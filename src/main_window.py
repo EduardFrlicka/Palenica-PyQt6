@@ -120,94 +120,105 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             self.le_cost_per_liter.setText(f"{self.cost_per_liter:.2f}")
 
     def print_save(self):
-        self.button_Print.setEnabled(False)
+        with Session(db.engine) as session:
+            order = self.create_order(session)
+        if order is None:
+            return
+
         if "save" in config.config["main_window"]["confirm_action"]:
-            if not self.save():
-                self.button_Print.setEnabled(True)
-                return
+            self.save(order, session)
 
         if "print" in config.config["main_window"]["confirm_action"]:
-            self.print()
+            self.print(order)
 
-        self.button_Print.setEnabled(True)
-
-    def save(self):
-        if self.customer_handler.is_manual:
-            return True
-
+    def create_order(self, session: Session = None) -> db.Order:
         distilling_inputs = self.findChildren(DistillingInput)
 
-        with Session(db.engine) as session:
-            season = db.get_active_season(session)
-            if season is None:
-                alert(messages.ACTIVE_SEASON_NOT_FOUND)
-                return False
+        season = db.get_active_season(session)
 
+        if season is None:
+            alert(messages.ACTIVE_SEASON_NOT_FOUND)
+            return None
+
+        if not self.customer_handler.is_manual:
             customer = db.get_customer(self.customer_handler.customer, session)
-            if customer is None:
-                alert(messages.CUSTOMER_NOT_SELECTED)
-                return False
+        else:
+            customer = db.Customer(
+                self.customer_handler.le_name.text(),
+                self.customer_handler.le_address.text(),
+                datetime.strptime(
+                    self.customer_handler.le_birthday.text(), DATE_FORMAT
+                ).date(),
+                self.customer_handler.cb_phone_number.currentText(),
+            )
 
+        if customer is None:
+            alert(messages.CUSTOMER_NOT_SELECTED)
+            return None
+
+        if not self.customer_handler.is_manual:
             la = db.get_customer_la(customer, session)
-
             if la != self.customer_handler.la:
                 alert(messages.LA_NOT_MATCH.format(la, self.customer_handler.la))
                 self.customer_handler.load_customer(customer)
-                return False
+                return None
 
-            production_line = db.get_production_line(
-                self.cb_production_line.currentText(), session
-            )
-            if production_line is None:
-                alert(messages.PRODUCTION_LINE_NOT_SELECTED)
-                return False
+        production_line = db.get_production_line(
+            self.cb_production_line.currentText(), session
+        )
 
-            if self.production_date is None:
-                alert(messages.WRONG_DATE_FORMAT)
-                return False
+        if production_line is None:
+            alert(messages.PRODUCTION_LINE_NOT_SELECTED)
+            return None
 
-            distillings = []
+        if self.production_date is None:
+            alert(messages.WRONG_DATE_FORMAT)
+            return None
 
-            for distilling_input in distilling_inputs:
-                distilling = distilling_input.get_object()
-                if distilling is None:
-                    return False
-                distillings.append(distilling)
+        distillings = []
 
-            # marked = session.query(db.Order).join(db.ProductionLine, db.Order.production_line_id == db.ProductionLine.id).filter(
-            #     db.Order.mark == self.le_mark.text()).filter(db.ProductionLine == production_line).first()
-            # if marked:
-            #     alert(messages.NON_UNIQUE_MARK.format(marked.mark,
-            #           marked.production_date.strftime(DATE_FORMAT)))
-            #     return False
+        for distilling_input in distilling_inputs:
+            distilling = distilling_input.get_object()
+            if distilling is None:
+                return None
+            distillings.append(distilling)
 
-            order = db.Order(
-                self.le_mark.text(),
-                self.production_date,
-                self.service_cost,
-                self.tax_vat,
-                self.tax_base,
-                self.cost_sum,
-                self.operating_costs,
-                distillings,
-                customer,
-                season,
-                production_line,
-            )
+        # marked = session.query(db.Order).join(db.ProductionLine, db.Order.production_line_id == db.ProductionLine.id).filter(
+        #     db.Order.mark == self.le_mark.text()).filter(db.ProductionLine == production_line).first()
+        # if marked:
+        #     alert(messages.NON_UNIQUE_MARK.format(marked.mark,
+        #           marked.production_date.strftime(DATE_FORMAT)))
+        #     return None
 
-            for distilling in distillings:
-                session.add(distilling)
-            session.add(order)
-            session.commit()
+        order = db.Order(
+            self.le_mark.text(),
+            self.production_date,
+            self.service_cost,
+            self.tax_vat,
+            self.tax_base,
+            self.cost_sum,
+            self.operating_costs,
+            distillings,
+            customer,
+            season,
+            production_line,
+        )
 
-            return order
+        return order
 
-        return True
+    def save(self, order: db.Order, session: Session = None):
+        if self.customer_handler.is_manual:
+            return
 
-    def print(self):
+        for distilling in order.distillings:
+            session.add(distilling)
+        session.add(order)
+        session.commit()
+
+    def print(self, order: db.Order):
         from printer import OrderPrinter
 
-        OrderPrinter().print_order(self)
+        OrderPrinter().print_order(self, order)
 
     @staticmethod
     def write_edit(edit: QLineEdit, value):

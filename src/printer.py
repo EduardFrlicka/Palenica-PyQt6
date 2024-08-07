@@ -4,6 +4,7 @@ import PyQt6.QtCore as QtCore
 import PyQt6.QtGui as QtGui
 import main_window
 import constants
+import db
 
 WORD_WRAP_CENTER = QtGui.QTextOption(QtCore.Qt.AlignmentFlag.AlignCenter)
 WORD_WRAP_CENTER.setWrapMode(QtGui.QTextOption.WrapMode.WordWrap)
@@ -131,7 +132,7 @@ class OrderPrinter:
         super().__init__()
         pass
 
-    def print_order(self, window: main_window.MainWindow):
+    def print_order(self, window: main_window.MainWindow, order: db.Order):
         printer = QtPrintSupport.QPrinter()
         painter = QtGui.QPainter()
 
@@ -159,7 +160,7 @@ class OrderPrinter:
 
         layout = printer.pageLayout().paintRectPixels(printer.resolution()).toRectF()
         layout.setHeight(layout.height() / 2)
-        self.paint_order(painter, window, layout)
+        self.paint_order(painter, window, layout, order)
         painter.end()
 
     def paint_order(
@@ -167,6 +168,7 @@ class OrderPrinter:
         painter: QtGui.QPainter,
         window: main_window.MainWindow,
         layout: QtCore.QRectF,
+        order: db.Order = None,
     ):
         def print_header():
             nonlocal layout
@@ -519,7 +521,6 @@ class OrderPrinter:
         def paint_notes(rect: QtCore.QRectF):
             title = "Iné záznamy:"
             text = window.notes.toPlainText()
-
 
             title_rect = QtCore.QRectF(rect)
             title_rect = painter.boundingRect(title_rect, title, WORD_WRAP_LEFT)
