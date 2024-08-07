@@ -1,7 +1,10 @@
+from sqlalchemy import Engine
 import db
 from sqlalchemy.orm import Session
 from datetime import date, datetime
 import config
+
+engine: Engine = None
 
 
 def engine_init():
@@ -20,10 +23,17 @@ def engine_init():
     return create_engine(db_url)
 
 
-engine = engine_init()
+def __getattr__(name: str):
+    if name == "engine":
+        global engine
+        if not engine:
+            engine = engine_init()
+        return engine
+
+    raise AttributeError(f"Module {__name__!r} has no attribute {name!r}")
 
 
-def create_all(engine=engine):
+def create_all(engine=__getattr__("engine")):
     db.Base.metadata.create_all(engine)
 
 
@@ -34,8 +44,9 @@ def drop_all(engine=engine):
 def populate(engine=engine):
     session = Session(engine)
 
-    season = db.Season(date(year=2023, month=9, day=15),
-                       date(year=2024, month=9, day=15))
+    season = db.Season(
+        date(year=2024, month=8, day=1), date(year=2025, month=8, day=1)
+    )
 
     line_a = db.ProductionLine("A")
     session.add(line_a)
