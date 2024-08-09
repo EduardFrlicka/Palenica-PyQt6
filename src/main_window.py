@@ -125,7 +125,9 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.le_tax_vat.setText(f"{self.tax_vat:0.2f}")
 
         if sum_la:
-            self.cost_per_liter = calculations.calculate_cost_per_liter(sum_taxes+self.service_cost, sum_la)
+            self.cost_per_liter = calculations.calculate_cost_per_liter(
+                sum_taxes + self.service_cost, sum_la
+            )
             self.le_cost_per_liter.setText(f"{self.cost_per_liter:.2f}")
 
     def print_save(self):
@@ -142,12 +144,13 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
     def create_order(self, session: Session = None) -> db.Order:
         distilling_inputs = self.findChildren(DistillingInput)
-
-        season = db.get_active_season(session)
-
-        if season is None:
-            alert(messages.ACTIVE_SEASON_NOT_FOUND)
-            return None
+        if not self.customer_handler.is_manual:
+            season = db.get_active_season(session)
+            if season is None:
+                alert(messages.ACTIVE_SEASON_NOT_FOUND)
+                return None
+        else:
+            season = None
 
         if not self.customer_handler.is_manual:
             customer = db.get_customer(self.customer_handler.customer, session)
@@ -172,9 +175,12 @@ class MainWindow(Ui_MainWindow, QMainWindow):
                 self.customer_handler.load_customer(customer)
                 return None
 
-        production_line = db.get_production_line(
-            self.cb_production_line.currentText(), session
-        )
+        if not self.customer_handler.is_manual:
+            production_line = db.get_production_line(
+                self.cb_production_line.currentText(), session
+            )
+        else:
+            production_line = db.ProductionLine(self.cb_production_line.currentText())
 
         if production_line is None:
             alert(messages.PRODUCTION_LINE_NOT_SELECTED)
