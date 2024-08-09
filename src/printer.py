@@ -4,6 +4,7 @@ import PyQt6.QtCore as QtCore
 import PyQt6.QtGui as QtGui
 import main_window
 import constants
+import calculations
 import db
 
 WORD_WRAP_CENTER = QtGui.QTextOption(QtCore.Qt.AlignmentFlag.AlignCenter)
@@ -176,7 +177,7 @@ class OrderPrinter:
             contact = "www.palenicasmizany.sk\ntel.č: 0905530298"
             address = "Pestovateľská pálenica, Hviezdoslavova 959, 053 11 Smižany\nJozef Szabó, Tatranská 20 053 11 Smižany"
             id_number = "IČO: 37179845\nIČ DPH: SK1026735831"
-            title = f"VYSKLADŇOVACÍ LIST / DAŇOVÝ DOKLAD č.: {window.le_mark.text()}/{window.production_date.strftime(r'%Y')}/{window.cb_production_line.currentText()}"
+            title = f"VYSKLADŇOVACÍ LIST / DAŇOVÝ DOKLAD č.: {order.mark}/{order.production_date.strftime(r'%Y')}/{order.production_line.name}"
 
             rect = QtCore.QRectF(layout)
             header_height = max(
@@ -267,13 +268,13 @@ class OrderPrinter:
         def print_footer():
             nonlocal layout
 
-            price_sum = window.cost_sum
+            price_sum = order.cost_sum
 
             confirmation = "Svojím podpisom potvrdzujem prevzatie a zaplatenie nezávadného destilátu."
             sign_customer = "_____________________________\nPodpis pestovateľa"
             sign_employee = "_____________________________\nPodpis prevádzkovateľa"
             cost_words = f"Spolu zaplatené slovom: {number_by_word(int(price_sum))} eur a {int(price_sum*100%100)} centov"
-            production_date = f"Dátum výroby destilátu: {window.production_date.strftime(constants.DATE_FORMAT)}"
+            production_date = f"Dátum výroby destilátu: {order.production_date.strftime(constants.DATE_FORMAT)}"
             pickup_date = "Dátum prevzatia destilátu: ______________________"
 
             dates = f"{cost_words}\n\n{production_date}\n\n{pickup_date}"
@@ -322,31 +323,31 @@ class OrderPrinter:
             texts = [
                 [
                     (
-                        f"{window.customer_handler.label_name.text()} ",
-                        f"{window.customer_handler.le_name.text()}",
+                        f"Meno a priezvisko: ",
+                        f"{order.customer.name}",
                     ),
                     (
-                        f"{window.customer_handler.label_birthday.text()} ",
-                        f"{window.customer_handler.le_birthday.text()}",
-                    ),
-                ],
-                [
-                    (
-                        f"{window.customer_handler.label_address.text()} ",
-                        f"{window.customer_handler.le_address.text()}",
-                    ),
-                    (
-                        f"{window.customer_handler.label_phone_number.text()} ",
-                        f"{window.customer_handler.cb_phone_number.currentText()}",
+                        f"Dátum narodenia: ",
+                        f"{order.customer.birthday.strftime(constants.DATE_FORMAT)}",
                     ),
                 ],
                 [
                     (
-                        f"{window.customer_handler.label_la_before.text()} ",
+                        f"Adresa: ",
+                        f"{order.customer.address}",
+                    ),
+                    (
+                        f"Telefónne číslo: ",
+                        f"{order.customer.phone_number}",
+                    ),
+                ],
+                [
+                    (
+                        f"Množstvo la pred pálením: ",
                         f"{window.customer_handler.le_la_before.text()}",
                     ),
                     (
-                        f"{window.customer_handler.label_la_after.text()} ",
+                        f"Množstvo la po pálení: ",
                         f"{window.customer_handler.le_la_after.text()}",
                     ),
                 ],
@@ -424,32 +425,32 @@ class OrderPrinter:
 
         def paint_distillings(rect: QtCore.QRectF):
             distillings_header = [
-                window.label_ferment_volume.text(),
-                window.label_ferment_type.text(),
-                window.label_alcohol_volume.text(),
-                window.label_alcohol_percentage.text(),
-                window.label_alcohol_temperature.text(),
-                window.label_alcohol_percentage_at_20.text(),
-                window.label_alcohol_volume_la.text(),
-                window.label_lower_tax.text(),
-                window.label_full_tax.text(),
-                window.label_sum_tax.text(),
+                r"Množstvo prijatého kvasu v litroch",
+                r"Druh prijatého kvasu",
+                r"Množstvo vyrobeného destilátu v l",
+                r"Zistené objemové %",
+                r"Teplota destilátu (˚C)",
+                r"Objemové % liehu pri 20˚C",
+                r"Množstvo vyrobeného a prevzatého destilátu v la",
+                r"Spotrebná daň s niššou sadzbou",
+                r"Spotrebná dan s vyššou sadzbou",
+                r"Suma spotrebnej dane v € zaplatenej pestovateľom",
             ]
 
             distillings = [
                 [
-                    distilling.edit_ferment_volume.text(),
-                    distilling.edit_ferment_type.text(),
+                    f"{distilling.ferment_volume:.0f}",
+                    distilling.ferment_type,
                     f"{distilling.alcohol_volume:.2f}",
                     f"{distilling.alcohol_percentage:.2f}",
                     f"{distilling.alcohol_temperature:.2f}",
-                    distilling.edit_alcohol_percentage_at_20.text(),
-                    distilling.edit_alcohol_volume_la.text(),
-                    distilling.edit_lower_tax.text(),
-                    distilling.edit_full_tax.text(),
-                    distilling.edit_sum_tax.text(),
+                    f"{distilling.alcohol_percentage_at_20:.2f}",
+                    f"{distilling.alcohol_volume_la:.2f}",
+                    f"{distilling.lower_tax:.3f}",
+                    f"{distilling.full_tax:.3f}",
+                    f"{distilling.sum_tax:.3f}",
                 ]
-                for distilling in window.findChildren(main_window.DistillingInput)
+                for distilling in order.distillings
             ]
 
             table_distillings = self.TablePrint(
@@ -460,16 +461,13 @@ class OrderPrinter:
             return table_distillings.rect
 
         def paint_dilute(rect: QtCore.QRectF):
-            dilute_cols = window.diluteTable.columnCount()
-            dilute_rows = window.diluteTable.rowCount()
-            dilute_header = [
-                window.diluteTable.horizontalHeaderItem(i).text()
-                for i in range(dilute_cols)
-            ]
-            dilute_cells = [
-                [window.diluteTable.item(row, col).text() for col in range(dilute_cols)]
-                for row in range(dilute_rows)
-            ]
+            dilute_header = [f"{val * 100:.0f}%" for val in constants.DILUTE_TARGETS]
+            dilute_cells = calculations.calculate_dillute_table(
+                [
+                    distilling.alcohol_percentage_at_20
+                    for distilling in order.distillings
+                ]
+            )
 
             table_dilute = self.TablePrint(
                 painter,
@@ -482,21 +480,26 @@ class OrderPrinter:
             return table_dilute.rect
 
         def paint_costs(rect: QtCore.QRectF):
+            sum_la = sum([distilling.alcohol_volume_la for distilling in order.distillings])
+
             costs_cells = [
                 [
-                    window.label_service_cost.text(),
-                    f"{window.rle_service_cost.value:.2f}",
+                    "Cena za službu s DPH v €",
+                    f"{order.service_cost:.2f}",
                 ],
                 [
-                    window.label_operating_costs.text(),
-                    f"{window.rle_operating_costs.value:.2f}",
+                    "Ostatné náklady s DPH v €",
+                    f"{order.operating_costs:.2f}",
                 ],
-                [window.label_cost_per_liter.text(), window.le_cost_per_liter.text()],
-                [window.label_tax_base.text(), window.le_tax_base.text()],
-                [window.label_tax.text(), window.le_tax_vat.text()],
+                [
+                    "Cena za liter 50%",
+                    f"{calculations.calculate_cost_per_liter(order.cost_sum-order.operating_costs, sum_la):.2f}",
+                ],
+                ["Základ dane", f"{order.tax_base:.2f}"],
+                ["DPH 20%", f"{order.tax_vat:.2f}"],
             ]
 
-            cost_sum_cells = [[window.label_cost_sum.text(), window.le_cost_sum.text()]]
+            cost_sum_cells = [["Spolu zaplatené pestovateľom s DPH v €", f"{order.cost_sum:.2f}"]]
 
             # set pen to bold
 
