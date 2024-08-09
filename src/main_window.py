@@ -125,7 +125,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.le_tax_vat.setText(f"{self.tax_vat:0.2f}")
 
         if sum_la:
-            self.cost_per_liter = (sum_taxes + self.service_cost) / sum_la * 0.5
+            self.cost_per_liter = calculations.calculate_cost_per_liter(sum_taxes+self.service_cost, sum_la)
             self.le_cost_per_liter.setText(f"{self.cost_per_liter:.2f}")
 
     def print_save(self):
