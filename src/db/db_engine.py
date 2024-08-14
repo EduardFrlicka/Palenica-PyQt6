@@ -3,6 +3,8 @@ import db
 from sqlalchemy.orm import Session
 from datetime import date, datetime
 import config
+from dialogs.alert import error
+from messages import DATABASE_CONFIG_ERROR
 
 engine: Engine = None
 
@@ -10,16 +12,19 @@ engine: Engine = None
 def engine_init():
     from sqlalchemy import create_engine, URL
 
+    database_config: dict = config.config.get("database")
+    if not database_config:
+        error(DATABASE_CONFIG_ERROR)
+
     db_url = URL.create(
-        config.config["database"].get("engine"),
-        config.config["database"].get("user"),
-        config.config["database"].get("password"),
-        config.config["database"].get("host"),
-        config.config["database"].get("port"),
-        config.config["database"].get("path"),
+        database_config.get("engine"),
+        database_config.get("user"),
+        database_config.get("password"),
+        database_config.get("host"),
+        database_config.get("port"),
+        database_config.get("path"),
     )
 
-    # db_url = URL.create("sqlite", None, None, None, None, "palenica.db")
     return create_engine(db_url)
 
 
@@ -44,9 +49,7 @@ def drop_all(engine=engine):
 def populate(engine=engine):
     session = Session(engine)
 
-    season = db.Season(
-        date(year=2024, month=8, day=1), date(year=2025, month=8, day=1)
-    )
+    season = db.Season(date(year=2024, month=8, day=1), date(year=2025, month=8, day=1))
 
     line_a = db.ProductionLine("A")
     session.add(line_a)

@@ -1,4 +1,10 @@
-from PyQt6.QtWidgets import QLineEdit, QTableWidgetItem, QMessageBox, QTabBar
+from PyQt6.QtWidgets import (
+    QLineEdit,
+    QTableWidgetItem,
+    QMessageBox,
+    QTabBar,
+    QPushButton,
+)
 from PyQt6.QtCore import QVariant, Qt
 from ui_py.create_distilling_tab_ui import Ui_CreateDistillingTab
 import resources
@@ -30,6 +36,14 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
         self.setWindowModality(Qt.WindowModality.WindowModal)
         self.rle_operating_costs.setDefault(0.0)
         self.setWindowState(Qt.WindowState.WindowMaximized)
+
+        for button_name, enabled in config.config.get(
+            "create_distilling_tab_buttons"
+        ).items():
+            button: QPushButton = getattr(self, button_name)
+            button.setEnabled(enabled)
+            if not enabled:
+                button.hide()
 
     def add_distillating_input(self):
         new_distilling_input = DistillingInput(parent=self)
@@ -133,14 +147,27 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
     def print_save(self):
         with Session(db.engine) as session:
             order = self.create_order(session)
-        if order is None:
-            return
+            if order is None:
+                return
 
-        if "save" in config.config["main_window"]["confirm_action"]:
-            self.save(order, session)
+            self.save_order(order, session)
+            self.print_order(order)
 
-        if "print" in config.config["main_window"]["confirm_action"]:
-            self.print(order)
+    def print(self):
+        with Session(db.engine) as session:
+            order = self.create_order(session)
+            if order is None:
+                return
+
+            self.print_order(order, session)
+
+    def save(self):
+        with Session(db.engine) as session:
+            order = self.create_order(session)
+            if order is None:
+                return
+
+            self.save_order(order, session)
 
     def create_order(self, session: Session = None) -> db.Order:
         distilling_inputs = self.findChildren(DistillingInput)
@@ -221,7 +248,7 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
 
         return order
 
-    def save(self, order: db.Order, session: Session = None):
+    def save_order(self, order: db.Order, session: Session = None):
         if self.customer_handler.is_manual:
             return
 
@@ -230,7 +257,7 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
         session.add(order)
         session.commit()
 
-    def print(self, order: db.Order):
+    def print_order(self, order: db.Order):
         from printer import OrderPrinter
 
         OrderPrinter().print_order(self, order)

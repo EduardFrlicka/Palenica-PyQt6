@@ -2,8 +2,9 @@ import PyQt6.QtWidgets as QtWidgets
 import PyQt6.QtPrintSupport as QtPrintSupport
 import PyQt6.QtCore as QtCore
 import PyQt6.QtGui as QtGui
-import main_window
+from tabs.create_distilling_tab import CreateDistillingTab
 import constants
+import config
 import calculations
 import db
 
@@ -133,7 +134,7 @@ class OrderPrinter:
         super().__init__()
         pass
 
-    def print_order(self, window: main_window.MainWindow, order: db.Order):
+    def print_order(self, window: CreateDistillingTab, order: db.Order):
         printer = QtPrintSupport.QPrinter()
         painter = QtGui.QPainter()
 
@@ -146,7 +147,7 @@ class OrderPrinter:
 
         printer.setPageSize(QtGui.QPageSize(QtGui.QPageSize.PageSizeId.A4))
         printer.setPageOrientation(QtGui.QPageLayout.Orientation.Portrait)
-        printer.setCopyCount(2)
+        printer.setCopyCount(config.config.get("printer", {}).get("copy_count"))
         printer.setPageMargins(
             QtCore.QMarginsF(4.0, 4.0, 4.0, 4.0), QtGui.QPageLayout.Unit.Point
         )
@@ -167,7 +168,7 @@ class OrderPrinter:
     def paint_order(
         self,
         painter: QtGui.QPainter,
-        window: main_window.MainWindow,
+        window: CreateDistillingTab,
         layout: QtCore.QRectF,
         order: db.Order = None,
     ):
@@ -480,7 +481,9 @@ class OrderPrinter:
             return table_dilute.rect
 
         def paint_costs(rect: QtCore.QRectF):
-            sum_la = sum([distilling.alcohol_volume_la for distilling in order.distillings])
+            sum_la = sum(
+                [distilling.alcohol_volume_la for distilling in order.distillings]
+            )
 
             costs_cells = [
                 [
@@ -499,7 +502,9 @@ class OrderPrinter:
                 ["DPH 20%", f"{order.tax_vat:.2f}"],
             ]
 
-            cost_sum_cells = [["Spolu zaplatené pestovateľom s DPH v €", f"{order.cost_sum:.2f}"]]
+            cost_sum_cells = [
+                ["Spolu zaplatené pestovateľom s DPH v €", f"{order.cost_sum:.2f}"]
+            ]
 
             # set pen to bold
 

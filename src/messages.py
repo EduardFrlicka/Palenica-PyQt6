@@ -8,3 +8,4 @@ NON_UNIQUE_MARK = "Číslo daňového dokladu {}, už existuje. Dátum výroby b
 PRODUCTION_LINE_NOT_SELECTED = "Nezvolená kolóna"
 LA_NOT_MATCH = "Počet la sa nezhoduje. Skontrolujte údaje a uložte znova."
 UPDATE_IN_PROGRESS = "Prebieha aktualizácia. Počkajte prosím."
+DATABASE_CONFIG_ERROR = "Chyba konfigurácie databázy"

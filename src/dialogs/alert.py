@@ -10,3 +10,16 @@ def alert(text: str):
     msgBox.buttonClicked.connect(msgBox.clickedButton)
 
     msgBox.exec()
+
+
+def error(text: str):
+    msgBox = QMessageBox()
+    msgBox.setIcon(QMessageBox.Icon.Critical)
+    msgBox.setText(text)
+    msgBox.setWindowTitle("Chyba")
+    msgBox.setStandardButtons(QMessageBox.StandardButton.Ok)
+    msgBox.buttonClicked.connect(msgBox.clickedButton)
+
+    msgBox.exec()
+
+    exit(1)

@@ -1,4 +1,4 @@
-import db as db
+import db
 
 constants = [
     db.Constant("LOWER_TAX", 7.452),

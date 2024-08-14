@@ -1,11 +1,10 @@
 from PyQt6.QtWidgets import QApplication, QMainWindow
-from PyQt6.QtCore import QVariant, Qt
+from PyQt6.QtCore import Qt
 from ui_py.main_window_ui import Ui_MainWindow
 from tabs.create_distilling_tab import CreateDistillingTab
 from tabs.distillings_tab import DistillingsTab
 import db
 import sys
-import updater
 
 
 class MainWindow(Ui_MainWindow, QMainWindow):
@@ -22,9 +21,10 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.tabWidget.addTab(self.distillings_tab, "Destilácie")
 
 
-
 app = QApplication(sys.argv)
 main_window = MainWindow()
+
+import updater
 
 updater.update()
 

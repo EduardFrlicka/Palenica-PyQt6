@@ -792,13 +792,6 @@
         </spacer>
        </item>
        <item>
-        <widget class="QPushButton" name="button_SavePrint">
-         <property name="text">
-          <string>Uložiť a Tlačiť</string>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QPushButton" name="button_Save">
          <property name="text">
           <string>Uložiť</string>
@@ -815,6 +808,13 @@
          </property>
          <property name="text">
           <string>Tlačiť</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="button_SavePrint">
+         <property name="text">
+          <string>Uložiť a Tlačiť</string>
          </property>
         </widget>
        </item>
