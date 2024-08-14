@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6.QtCore import QVariant, Qt
 from ui_py.main_window_ui import Ui_MainWindow
+from tabs.create_distilling_tab import CreateDistillingTab
 from create_distilling_tab import CreateDistillingTab
 import db
 import sys
