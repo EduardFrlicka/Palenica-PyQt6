@@ -21,6 +21,16 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
+    <widget class="CustomerHandler" name="customer_handler" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="4,1">
      <item>
       <layout class="QVBoxLayout" name="main_vertical" stretch="0,0,0,0,0,0,0">
@@ -875,23 +885,13 @@
      </item>
     </layout>
    </item>
-   <item>
-    <widget class="CustomerHandler" name="customer_handler" native="true">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-    </widget>
-   </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
    <class>ResetableLineEdit</class>
    <extends>QWidget</extends>
-   <header>resetable_line_edit</header>
+   <header>widgets.resetable_line_edit</header>
    <container>1</container>
    <slots>
     <signal>textEdited()</signal>
@@ -900,7 +900,7 @@
   <customwidget>
    <class>CustomerHandler</class>
    <extends>QWidget</extends>
-   <header>customer_handler</header>
+   <header>widgets.customer_handler</header>
    <container>1</container>
    <slots>
     <signal>la_changed()</signal>

@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import QLineEdit, QTableWidgetItem, QMessageBox, QTabBar
 from PyQt6.QtCore import QVariant, Qt
 from ui_py.create_distilling_tab_ui import Ui_CreateDistillingTab
 import resources
-from distilling_input import DistillingInput
+from widgets.distilling_input import DistillingInput
 from datetime import datetime
 from constants import SERVICE_COST_PER_LA, VAT_TAX, FULL_TAX, LOWER_TAX, DATE_FORMAT
 from dialogs.customer_select import CustomerSelectDialog

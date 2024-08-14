@@ -20,6 +20,14 @@ class Ui_CreateDistillingTab(object):
         CreateDistillingTab.setSizePolicy(sizePolicy)
         self.verticalLayout = QtWidgets.QVBoxLayout(CreateDistillingTab)
         self.verticalLayout.setObjectName("verticalLayout")
+        self.customer_handler = CustomerHandler(parent=CreateDistillingTab)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.customer_handler.sizePolicy().hasHeightForWidth())
+        self.customer_handler.setSizePolicy(sizePolicy)
+        self.customer_handler.setObjectName("customer_handler")
+        self.verticalLayout.addWidget(self.customer_handler)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.main_vertical = QtWidgets.QVBoxLayout()
@@ -420,14 +428,6 @@ class Ui_CreateDistillingTab(object):
         self.cb_production_line.addItem("")
         self.horizontalLayout.addWidget(self.cb_production_line)
         self.verticalLayout.addLayout(self.horizontalLayout)
-        self.customer_handler = CustomerHandler(parent=CreateDistillingTab)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.customer_handler.sizePolicy().hasHeightForWidth())
-        self.customer_handler.setSizePolicy(sizePolicy)
-        self.customer_handler.setObjectName("customer_handler")
-        self.verticalLayout.addWidget(self.customer_handler)
 
         self.retranslateUi(CreateDistillingTab)
         QtCore.QMetaObject.connectSlotsByName(CreateDistillingTab)
@@ -470,5 +470,5 @@ class Ui_CreateDistillingTab(object):
         self.label_2.setText(_translate("CreateDistillingTab", "Kolóna:"))
         self.cb_production_line.setItemText(1, _translate("CreateDistillingTab", "A"))
         self.cb_production_line.setItemText(2, _translate("CreateDistillingTab", "B"))
-from customer_handler import CustomerHandler
-from resetable_line_edit import ResetableLineEdit
+from widgets.customer_handler import CustomerHandler
+from widgets.resetable_line_edit import ResetableLineEdit
