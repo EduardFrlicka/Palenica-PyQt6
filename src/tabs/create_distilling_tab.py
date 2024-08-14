@@ -5,13 +5,13 @@ import resources
 from distilling_input import DistillingInput
 from datetime import datetime
 from constants import SERVICE_COST_PER_LA, VAT_TAX, FULL_TAX, LOWER_TAX, DATE_FORMAT
-from customer_select import CustomerSelectDialog
+from dialogs.customer_select import CustomerSelectDialog
 from sqlalchemy.orm import Session
 from datetime import date
 import config
 import db
 import messages
-from alert import alert
+from dialogs.alert import alert
 import calculations
 
 

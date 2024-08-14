@@ -4,7 +4,7 @@ from ui_py.distilling_input_ui import Ui_distilling_input
 from temperature_table import TEMPERATURE_TABLE
 from constants import LOWER_TAX, FULL_TAX, LOWER_TAX_LA_LIMIT
 import db
-from alert import alert
+from dialogs.alert import alert
 import messages
 
 

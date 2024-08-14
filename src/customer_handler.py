@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QWidget, QCompleter
 from PyQt6.QtCore import pyqtSignal
-from customer_select import CustomerSelectDialog
+from dialogs.customer_select import CustomerSelectDialog
 from ui_py.customer_handler_ui import Ui_CustomerHandler
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func

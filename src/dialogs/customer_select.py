@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 import db
 from datetime import datetime, date
 from constants import DATE_FORMAT
-from alert import alert
+from dialogs.alert import alert
 
 from models.customer_model import CustomerModelView, CustomerSortFilterModel
 
