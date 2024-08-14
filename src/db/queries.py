@@ -28,6 +28,9 @@ def get_production_line(line: int | str | db.Customer, session: Session = None):
         if isinstance(line, str):
             return session.query(db.ProductionLine).filter_by(name=line).first()
 
+    with Session(db.engine) as session:
+        return get_production_line(line, session)
+
 
 def get_customer_la(customer: int | db.Customer, session: Session = None):
     if session is None:

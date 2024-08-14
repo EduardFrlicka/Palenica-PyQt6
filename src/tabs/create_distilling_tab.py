@@ -257,10 +257,13 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
         session.add(order)
         session.commit()
 
+        print("order saved")
+
     def print_order(self, order: db.Order):
         from printer import OrderPrinter
 
         OrderPrinter().print_order(self, order)
+        print("order printed")
 
     @staticmethod
     def write_edit(edit: QLineEdit, value):

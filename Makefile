@@ -13,7 +13,7 @@ PYUIC:=pyuic6
 all: $(PY_UI)
 
 run: all
-	python3 src/employee_app.py
+	python3 src/app.py
 
 $(OBJ)/ui_py/%_ui.py: $(SRC)/ui/%.ui Makefile
 	@mkdir -p $(@D)

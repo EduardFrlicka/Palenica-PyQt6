@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>592</width>
-    <height>341</height>
+    <width>1023</width>
+    <height>277</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,13 +15,292 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout"/>
+    <layout class="QHBoxLayout" name="horizontal_serach_bar">
+     <item>
+      <layout class="QVBoxLayout" name="vertical_mark">
+       <item>
+        <widget class="QLabel" name="label_mark">
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Daňový doklad č.:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="le_mark">
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="vertical_production_line">
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Kolóna:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="cb_production_line">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <item>
+          <property name="text">
+           <string/>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>A</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>B</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="vertical_production_date">
+       <item>
+        <widget class="QLabel" name="label_production_date">
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Dátum výroby:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="le_production_date">
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="vertical_name">
+       <item>
+        <widget class="QLabel" name="label_name">
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Meno a priezvisko:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="le_name">
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="vertical_birthday">
+       <item>
+        <widget class="QLabel" name="label_birthday">
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Dátum nar.:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="le_birthday">
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="vertical_season">
+       <item>
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Sezóna:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="cb_season">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <item>
+          <property name="text">
+           <string/>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
    </item>
    <item>
-    <widget class="QTableView" name="tableView"/>
+    <widget class="QTableView" name="order_table">
+     <attribute name="verticalHeaderVisible">
+      <bool>false</bool>
+     </attribute>
+    </widget>
    </item>
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>order_table</sender>
+   <signal>doubleClicked(QModelIndex)</signal>
+   <receiver>DistillingsTab</receiver>
+   <slot>order_selected()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>543</x>
+     <y>163</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>492</x>
+     <y>6</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>le_mark</sender>
+   <signal>textEdited(QString)</signal>
+   <receiver>DistillingsTab</receiver>
+   <slot>mark_edited()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>208</x>
+     <y>52</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>217</x>
+     <y>1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cb_production_line</sender>
+   <signal>currentTextChanged(QString)</signal>
+   <receiver>DistillingsTab</receiver>
+   <slot>production_line_selected()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>252</x>
+     <y>58</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>290</x>
+     <y>70</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>le_name</sender>
+   <signal>textEdited(QString)</signal>
+   <receiver>DistillingsTab</receiver>
+   <slot>name_edited()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>715</x>
+     <y>51</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>510</x>
+     <y>72</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>le_birthday</sender>
+   <signal>textEdited(QString)</signal>
+   <receiver>DistillingsTab</receiver>
+   <slot>birthday_edited()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>867</x>
+     <y>54</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>954</x>
+     <y>70</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>le_production_date</sender>
+   <signal>textEdited(QString)</signal>
+   <receiver>DistillingsTab</receiver>
+   <slot>production_date_edited()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>498</x>
+     <y>50</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>510</x>
+     <y>1</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>order_selected()</slot>
+  <slot>mark_edited()</slot>
+  <slot>production_line_selected()</slot>
+  <slot>name_edited()</slot>
+  <slot>production_date_edited()</slot>
+  <slot>birthday_edited()</slot>
+  <slot>season_selected()</slot>
+ </slots>
 </ui>
