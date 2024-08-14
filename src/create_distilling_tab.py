@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QMainWindow, QLineEdit, QTableWidgetItem, QMessageBox
+from PyQt6.QtWidgets import QLineEdit, QTableWidgetItem, QMessageBox, QTabBar
 from PyQt6.QtCore import QVariant, Qt
-from ui_py.MainWindow_ui import Ui_MainWindow
+from ui_py.create_distilling_tab_ui import Ui_CreateDistillingTab
 import resources
 from distilling_input import DistillingInput
 from datetime import datetime
@@ -15,7 +15,7 @@ from alert import alert
 import calculations
 
 
-class MainWindow(Ui_MainWindow, QMainWindow):
+class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
@@ -32,7 +32,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.setWindowState(Qt.WindowState.WindowMaximized)
 
     def add_distillating_input(self):
-        new_distilling_input = DistillingInput(parent=self.centralwidget)
+        new_distilling_input = DistillingInput(parent=self)
         new_distilling_input.setObjectName("distilling_input")
         new_distilling_input.tax_edited.connect(self.update_costs)
         new_distilling_input.la_edited.connect(self.distribute_la)
