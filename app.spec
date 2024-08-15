@@ -19,7 +19,7 @@ app = Analysis(
 )
 
 updater = Analysis(
-    ['src/updater.py'],
+    ['src/updater_app.py'],
     pathex=[],
     binaries=[],
     datas=[],

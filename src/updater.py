@@ -79,17 +79,3 @@ def get_current():
 
 def get_latest():
     return latest_json["published_at"]
-
-
-def main():
-    app = QApplication(sys.argv)
-
-    
-
-    def dialog_thread():
-
-    
-
-
-if __name__ == "__main__":
-    main()
