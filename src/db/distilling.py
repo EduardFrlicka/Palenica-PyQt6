@@ -7,8 +7,7 @@ from sqlalchemy import Engine
 
 class Distilling(Base):
     __tablename__ = "distilling"
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     ferment_volume: Mapped[float] = mapped_column(Float)
     ferment_type: Mapped[str] = mapped_column(String(STRING_LEN))
     alcohol_volume: Mapped[float] = mapped_column(Float)
@@ -22,11 +21,19 @@ class Distilling(Base):
 
     order_id: Mapped[int] = mapped_column(ForeignKey("order.id"))
 
-    def __init__(self, ferment_volume: float,
-                 ferment_type: str, alcohol_volume: float,
-                 alcohol_percentage: float, alcohol_temperature: float,
-                 alcohol_percentage_at_20: float, alcohol_volume_la: float,
-                 lower_tax: float, full_tax: float, sum_tax: float):
+    def __init__(
+        self,
+        ferment_volume: float,
+        ferment_type: str,
+        alcohol_volume: float,
+        alcohol_percentage: float,
+        alcohol_temperature: float,
+        alcohol_percentage_at_20: float,
+        alcohol_volume_la: float,
+        lower_tax: float,
+        full_tax: float,
+        sum_tax: float,
+    ):
 
         self.ferment_volume = ferment_volume
         self.ferment_type = ferment_type

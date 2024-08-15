@@ -8,8 +8,7 @@ import db
 
 class Order(Base):
     __tablename__ = "order"
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
 
     mark: Mapped[str] = mapped_column(String(STRING_LEN))
 
@@ -31,7 +30,20 @@ class Order(Base):
     production_line_id: Mapped[int] = mapped_column(ForeignKey("production_line.id"))
     production_line: Mapped["db.ProductionLine"] = relationship()
 
-    def __init__(self, mark: str, production_date: date, service_cost: float, tax_vat: float, tax_base: float, cost_sum: float, operating_costs: float, distillings: "db.Distilling", customer: "db.Customer", season: "db.Season", production_line: "db.ProductionLine"):
+    def __init__(
+        self,
+        mark: str,
+        production_date: date,
+        service_cost: float,
+        tax_vat: float,
+        tax_base: float,
+        cost_sum: float,
+        operating_costs: float,
+        distillings: "db.Distilling",
+        customer: "db.Customer",
+        season: "db.Season",
+        production_line: "db.ProductionLine",
+    ):
         self.mark = mark
         self.service_cost = service_cost
         self.tax_vat = tax_vat

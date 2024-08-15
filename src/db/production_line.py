@@ -7,8 +7,7 @@ import db
 
 class ProductionLine(Base):
     __tablename__ = "production_line"
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
 
     name: Mapped[str] = mapped_column(String(STRING_LEN), unique=True)
 

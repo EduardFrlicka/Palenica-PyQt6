@@ -73,7 +73,6 @@ class CustomerSortFilterModel(QSortFilterProxyModel):
         return left_name < right_name
 
 
-
 class CustomerModelView(QAbstractTableModel):
     def __init__(self, parent: QObject | None = ...) -> None:
         super().__init__(parent)
@@ -126,9 +125,6 @@ class CustomerModelView(QAbstractTableModel):
         return len(self._headers)
 
     def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
-        if (
-            orientation == Qt.Orientation.Horizontal
-            and role == Qt.ItemDataRole.DisplayRole
-        ):
+        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
             return self._headers[section]
         return super().headerData(section, orientation, role)
