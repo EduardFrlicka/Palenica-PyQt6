@@ -3,22 +3,23 @@ import requests
 import json
 import shutil
 import zipfile
-import os
 import subprocess
-import PyQt6.QtWidgets as QtWidgets
+import sys
+from PyQt6.QtWidgets import QApplication, QMessageBox
 import messages
 import threading
 
-RELEASE_URL = config.get("updater", "url")
 VERSION_FILE = "version.txt"
 
 
-if config.get("update", True):
+if config.get("updater", "allow_updates", default=True):
+    RELEASE_URL = config.get("updater", "url")
     latest_json = json.loads(requests.api.get(RELEASE_URL).text)
+    zip_name = f"{latest_json['tag_name']}.zip"
 
 
 def update():
-    if not config.get("update", True):
+    if not config.get("updater", "allow_updates", default=True):
         return
     latest = get_latest()
     current = get_current()
@@ -32,38 +33,34 @@ def download_file(url, local_filename):
             shutil.copyfileobj(r.raw, f)
 
 
-msgBox = QtWidgets.QMessageBox()
-
-
-def update_dialog_thread():
-    msgBox.setText("Aktualizácia")
-    msgBox.setText(messages.UPDATE_IN_PROGRESS)
-    msgBox.setIcon(QtWidgets.QMessageBox.Icon.Information)
-    msgBox.setStandardButtons()
-    msgBox.show()
-    msgBox.exec()
-
-
 def _update():
+    def update_dialog_thread():
+        msgBox.setText("Aktualizácia")
+        msgBox.setText(messages.UPDATE_IN_PROGRESS)
+        msgBox.setIcon(QMessageBox.Icon.Information)
+        msgBox.setStandardButtons()
+        msgBox.show()
+        msgBox.exec()
+
+    msgBox = QMessageBox()
     # run msgBox in separate thread
     threading.Thread(target=update_dialog_thread).start()
 
-    local_name = f"{latest_json['tag_name']}.zip"
     asset_url = find_asset_url("windows-latest.zip")
-    download_file(asset_url, local_name)
-    with zipfile.ZipFile(local_name, "r") as zip_ref:
-        zip_ref.extractall("new")
-    save_current(get_latest())
+    download_file(asset_url, zip_name)
 
-    subprocess.run(["start", "copy_update.bat"], shell=True)
+    with zipfile.ZipFile(zip_name, "r") as zip_ref:
+        if "updater.exe" in zip_ref.namelist():
+            zip_ref.extract("updater.exe", ".")
 
+    subprocess.run(["updater.exe"], shell=True)
     msgBox.close()
+    exit()
 
 
 def find_asset_url(asset_name):
     for asset in latest_json["assets"]:
         if asset["name"] == asset_name:
-            print(asset["browser_download_url"])
             return asset["browser_download_url"]
 
 
@@ -82,3 +79,17 @@ def get_current():
 
 def get_latest():
     return latest_json["published_at"]
+
+
+def main():
+    app = QApplication(sys.argv)
+
+    
+
+    def dialog_thread():
+
+    
+
+
+if __name__ == "__main__":
+    main()
