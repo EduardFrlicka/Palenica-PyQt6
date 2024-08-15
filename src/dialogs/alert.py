@@ -23,3 +23,14 @@ def error(text: str):
     msgBox.exec()
 
     exit(1)
+
+
+def warning(text: str):
+    msgBox = QMessageBox()
+    msgBox.setIcon(QMessageBox.Icon.Warning)
+    msgBox.setText(text)
+    msgBox.setWindowTitle("Varovanie")
+    msgBox.setStandardButtons(QMessageBox.StandardButton.Ok)
+    msgBox.buttonClicked.connect(msgBox.clickedButton)
+
+    msgBox.exec()
