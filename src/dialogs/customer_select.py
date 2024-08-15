@@ -10,11 +10,7 @@ from constants import DATE_FORMAT
 from dialogs.alert import alert
 
 from models.customer_model import CustomerModelView, CustomerSortFilterModel
-
-
-class DateDelegate(QStyledItemDelegate):
-    def displayText(self, value: date, _) -> str:
-        return value.strftime(DATE_FORMAT)
+from models.delegates import date_delegate
 
 
 class CustomerSelectDialog(QDialog, Ui_CustomerSelect):
@@ -36,7 +32,6 @@ class CustomerSelectDialog(QDialog, Ui_CustomerSelect):
         self.customer_table.setModel(self.filter_model)
         self.customer_table.resizeColumnsToContents()
         self.customer_table.setColumnHidden(0, True)
-        date_delegate = DateDelegate(self.customer_table)
         self.customer_table.setItemDelegateForColumn(3, date_delegate)
         self.customer_table.sortByColumn(1, Qt.SortOrder.AscendingOrder)
 
@@ -68,9 +63,7 @@ class CustomerSelectDialog(QDialog, Ui_CustomerSelect):
         if self.phone_number is None:
             self.phone_number = ""
 
-        self.customer = db.Customer(
-            self.name, self.address, self.birthday, self.phone_number
-        )
+        self.customer = db.Customer(self.name, self.address, self.birthday, self.phone_number)
         with Session(db.engine) as session:
             session.add(self.customer)
             session.commit()

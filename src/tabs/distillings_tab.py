@@ -8,11 +8,7 @@ import db
 from datetime import datetime, date
 from constants import DATE_FORMAT
 from models.order_model import OrderModelView, OrderSortFilterModel
-
-
-class DateDelegate(QStyledItemDelegate):
-    def displayText(self, value: date, _) -> str:
-        return value.strftime(DATE_FORMAT)
+from models.delegates import date_delegate
 
 
 class DistillingsTab(Ui_DistillingsTab, QTabBar):
@@ -32,7 +28,6 @@ class DistillingsTab(Ui_DistillingsTab, QTabBar):
         self.order_table.setModel(self.filter_model)
         self.order_table.setColumnHidden(0, True)
         self.order_table.setColumnHidden(1, True)
-        date_delegate = DateDelegate(self.order_table)
         self.order_table.setItemDelegateForColumn(4, date_delegate)
         self.order_table.setItemDelegateForColumn(7, date_delegate)
         self.order_table.sortByColumn(2, Qt.SortOrder.AscendingOrder)
