@@ -18,13 +18,13 @@ if config.get("updater", "allow_updates", default=True):
     zip_name = f"{latest_json['tag_name']}.zip"
 
 
-def update():
+def check_and_perform_update():
     if not config.get("updater", "allow_updates", default=True):
         return
     latest = get_latest()
     current = get_current()
     if latest > current:
-        _update()
+        perform_update()
 
 
 def download_file(url, local_filename):
@@ -33,7 +33,7 @@ def download_file(url, local_filename):
             shutil.copyfileobj(r.raw, f)
 
 
-def _update():
+def perform_update():
     def update_dialog_thread():
         msgBox.setText("Aktualizácia")
         msgBox.setText(messages.UPDATE_IN_PROGRESS)
@@ -53,9 +53,23 @@ def _update():
         if "updater.exe" in zip_ref.namelist():
             zip_ref.extract("updater.exe", ".")
 
-    subprocess.run(["updater.exe"], shell=True)
+    subprocess.run(["updater.exe"])
     msgBox.close()
     exit()
+
+
+def extract_update(progress_callback, finished_callback):
+    with zipfile.ZipFile(zip_name, "r") as zip_ref:
+        filenames = zip_ref.namelist()
+        for i, file in enumerate(filenames):
+            if file == "updater.exe":
+                continue
+            zip_ref.extract(file, ".")
+            progress_callback(i / len(filenames) * 100)
+
+    save_current(latest_json["tag_name"])
+
+    finished_callback()
 
 
 def find_asset_url(asset_name):

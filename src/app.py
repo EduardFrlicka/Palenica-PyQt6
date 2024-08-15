@@ -26,7 +26,7 @@ main_window = MainWindow()
 
 import updater
 
-updater.update()
+updater.check_and_perform_update()
 
 main_window.show()
 app.exec()
