@@ -75,24 +75,18 @@ updater_exe = EXE(
     entitlements_file=None,
 )
 
-app_coll = COLLECT(
+coll = COLLECT(
     app_exe,
     app.binaries,
     app.zipfiles,
     app.datas,
-    strip=False,
-    upx=True,
-    upx_exclude=[],
-    name='main',
-)
-
-updater_coll = COLLECT(
     updater_exe,
     updater.binaries,
+    updater.zipfiles,
     updater.datas,
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='updater',
+    name='main',
 )
 
