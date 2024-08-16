@@ -1,5 +1,5 @@
-from sqlalchemy import Engine
 import db
+from sqlalchemy import create_engine, URL
 from sqlalchemy.orm import Session
 from datetime import date, datetime
 import config
@@ -8,11 +8,11 @@ from messages import DATABASE_CONFIG_ERROR, DATABASE_OFFLINE
 
 
 def engine_init():
-    from sqlalchemy import create_engine, URL
 
     database_config: dict = config.config.get("database")
     if not database_config:
         error(DATABASE_CONFIG_ERROR)
+        return None
 
     try:
         db_url = URL.create(

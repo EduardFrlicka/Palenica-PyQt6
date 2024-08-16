@@ -19,7 +19,7 @@ default_config = {
         "user": "",
         "password": "",
         "host": "",
-        "port": "",
+        "port": 0,
         "path": "",
     },
 }

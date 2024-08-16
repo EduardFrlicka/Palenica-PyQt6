@@ -2,7 +2,6 @@ from .base import Base, STRING_LEN
 from sqlalchemy import ForeignKey, Integer, String, Float
 from sqlalchemy.orm import Mapped, mapped_column
 import db
-from sqlalchemy import Engine
 
 
 class Distilling(Base):

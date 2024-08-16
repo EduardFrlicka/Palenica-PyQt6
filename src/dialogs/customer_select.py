@@ -8,6 +8,7 @@ import db
 from datetime import datetime, date
 from constants import DATE_FORMAT
 from dialogs.alert import alert
+from messages import DATABASE_OFFLINE
 
 from models.customer_model import CustomerModelView, CustomerSortFilterModel
 from models.delegates import date_delegate
@@ -37,6 +38,9 @@ class CustomerSelectDialog(QDialog, Ui_CustomerSelect):
 
     def showEvent(self, a0: QShowEvent | None) -> None:
         res = super().showEvent(a0)
+        if db.engine is None:
+            alert(DATABASE_OFFLINE)
+            return res
         self.loadData()
         return res
 
@@ -50,6 +54,10 @@ class CustomerSelectDialog(QDialog, Ui_CustomerSelect):
         pass
 
     def customer_created(self):
+        if db.engine is None:
+            self.reject()
+            return
+
         if self.name is None:
             alert("Chýba meno zákazníka")
             return
