@@ -34,13 +34,13 @@ def download_file(url, local_filename):
 
 
 def perform_update():
-    def update_dialog_thread():
-        msgBox.setText("Aktualizácia")
-        msgBox.setText(messages.UPDATE_IN_PROGRESS)
-        msgBox.setIcon(QMessageBox.Icon.Information)
-        msgBox.setStandardButtons()
-        msgBox.show()
-        msgBox.exec()
+    # def update_dialog_thread():
+    #     msgBox.setText("Aktualizácia")
+    #     msgBox.setText(messages.UPDATE_IN_PROGRESS)
+    #     msgBox.setIcon(QMessageBox.Icon.Information)
+    #     msgBox.setStandardButtons()
+    #     msgBox.show()
+    #     msgBox.exec()
 
     # msgBox = QMessageBox()
     # run msgBox in separate thread
@@ -54,7 +54,7 @@ def perform_update():
         if "updater.exe" in zip_ref.namelist():
             zip_ref.extract("updater.exe", ".")
 
-    subprocess.run([".\\updater.exe"])
+    subprocess.run(["start", "", "updater.exe"])
     # msgBox.close()
     # thread.join()
     sys.exit()
