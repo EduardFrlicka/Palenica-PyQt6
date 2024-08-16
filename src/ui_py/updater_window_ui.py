@@ -23,7 +23,7 @@ class Ui_Updater(object):
         self.label.setObjectName("label")
         self.verticalLayout.addWidget(self.label)
         self.progressBar = QtWidgets.QProgressBar(parent=self.centralwidget)
-        self.progressBar.setProperty("value", 24)
+        self.progressBar.setProperty("value", 0)
         self.progressBar.setObjectName("progressBar")
         self.verticalLayout.addWidget(self.progressBar)
         spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
