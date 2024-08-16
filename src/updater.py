@@ -67,7 +67,7 @@ def extract_update(progress_callback, finished_callback):
             if file == "updater.exe":
                 continue
             zip_ref.extract(file, ".")
-            progress_callback(i / len(filenames) * 100)
+            progress_callback(i / len(filenames))
 
     save_current(latest_json["tag_name"])
 

@@ -10,7 +10,10 @@ class UpdaterWindow(Ui_Updater, QMainWindow):
         super().__init__()
         self.setupUi(self)
 
-    def set_progress(self, value: int):
+    def set_progress(self, value: int | float):
+        if isinstance(value, float):
+            value = int(value * 100)
+        
         self.progressBar.setValue(value)
 
 
