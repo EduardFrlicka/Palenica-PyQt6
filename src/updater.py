@@ -34,29 +34,29 @@ def download_file(url, local_filename):
 
 
 def perform_update():
-    # def update_dialog_thread():
-    #     msgBox.setText("Aktualizácia")
-    #     msgBox.setText(messages.UPDATE_IN_PROGRESS)
-    #     msgBox.setIcon(QMessageBox.Icon.Information)
-    #     msgBox.setStandardButtons()
-    #     msgBox.show()
-    #     msgBox.exec()
+    msgBox = QMessageBox()
 
-    # msgBox = QMessageBox()
-    # run msgBox in separate thread
-    # thread = threading.Thread(target=update_dialog_thread)
-    # thread.start()
+    def _download_and_run_updater():
+        asset_url = find_asset_url("windows-latest.zip")
+        download_file(asset_url, zip_name)
 
-    asset_url = find_asset_url("windows-latest.zip")
-    download_file(asset_url, zip_name)
+        with zipfile.ZipFile(zip_name, "r") as zip_ref:
+            if "updater.exe" in zip_ref.namelist():
+                zip_ref.extract("updater.exe", ".")
 
-    with zipfile.ZipFile(zip_name, "r") as zip_ref:
-        if "updater.exe" in zip_ref.namelist():
-            zip_ref.extract("updater.exe", ".")
+        subprocess.Popen(["start", ".\\updater.exe"], shell=True)
+        msgBox.close()
 
-    subprocess.Popen(["start", ".\\updater.exe"], shell=True)
-    # msgBox.close()
-    # thread.join()
+    msgBox.setText("Aktualizácia")
+    msgBox.setText(messages.UPDATE_IN_PROGRESS)
+    msgBox.setIcon(QMessageBox.Icon.Information)
+    msgBox.setStandardButtons()
+    msgBox.show()
+
+    threading.Thread(target=_download_and_run_updater).start()
+
+    msgBox.exec()
+
     sys.exit()
 
 
