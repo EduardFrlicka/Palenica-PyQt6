@@ -54,7 +54,7 @@ def perform_update():
         if "updater.exe" in zip_ref.namelist():
             zip_ref.extract("updater.exe", ".")
 
-    subprocess.run(["start", "", "updater.exe"])
+    subprocess.run(["start", ".\\updater.exe"])
     # msgBox.close()
     # thread.join()
     sys.exit()
