@@ -2,9 +2,6 @@ import tomli
 import os
 
 default_config = {
-    "main_window": {
-        "confirm_action": ["save", "print"],
-    },
     "create_distilling_tab_buttons": {
         "button_Save": False,
         "button_Print": False,
@@ -12,9 +9,18 @@ default_config = {
     },
     "updater": {
         "allow_update": True,
+        "url": "https://api.github.com/repos/EduardFrlicka/Palenica-PyQt6/releases/latest",
     },
     "printer": {
         "copies": 2,
+    },
+    "database": {
+        "engine": "",
+        "user": "",
+        "password": "",
+        "host": "",
+        "port": "",
+        "path": "",
     },
 }
 
@@ -50,4 +56,17 @@ if os.path.exists("config.toml"):
         config.update(loaded_config)
 else:
     with open("config.toml", "w") as conf_file:
-        tomli.dump(default_config, conf_file)
+        for section_name, section in default_config.items():
+            conf_file.write(f"[{section_name}]\n")
+            for key, value in section.items():
+                if value is True:
+                    value = "true"
+                elif value is False:
+                    value = "false"
+                elif isinstance(value, str):
+                    value = f'"{value}"'
+                elif value is None:
+                    value = "null"
+
+                conf_file.write(f"{key} = {value}\n")
+            conf_file.write("\n")
