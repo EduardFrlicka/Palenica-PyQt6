@@ -3,10 +3,8 @@ import db
 from sqlalchemy.orm import Session
 from datetime import date, datetime
 import config
-from dialogs.alert import error
-from messages import DATABASE_CONFIG_ERROR
-
-engine: Engine = None
+from dialogs.alert import error, alert
+from messages import DATABASE_CONFIG_ERROR, DATABASE_OFFLINE
 
 
 def engine_init():
@@ -16,29 +14,28 @@ def engine_init():
     if not database_config:
         error(DATABASE_CONFIG_ERROR)
 
-    db_url = URL.create(
-        database_config.get("engine"),
-        database_config.get("user"),
-        database_config.get("password"),
-        database_config.get("host"),
-        database_config.get("port"),
-        database_config.get("path"),
-    )
+    try:
+        db_url = URL.create(
+            database_config.get("engine"),
+            database_config.get("user"),
+            database_config.get("password"),
+            database_config.get("host"),
+            database_config.get("port"),
+            database_config.get("path"),
+        )
+        engine = create_engine(db_url)
 
-    return create_engine(db_url)
+    except Exception as e:
+        alert(DATABASE_OFFLINE)
+        return None
 
-
-def __getattr__(name: str):
-    if name == "engine":
-        global engine
-        if not engine:
-            engine = engine_init()
-        return engine
-
-    raise AttributeError(f"Module {__name__!r} has no attribute {name!r}")
+    return engine
 
 
-def create_all(engine=__getattr__("engine")):
+engine = engine_init()
+
+
+def create_all(engine=engine):
     db.Base.metadata.create_all(engine)
 
 

@@ -15,6 +15,8 @@ class CustomerHandler(QWidget, Ui_CustomerHandler):
         super().__init__(parent)
         self.setupUi(self)
         self.change_customer()
+        if db.engine is None:
+            self.manual_customer()
 
     def select_customer(self):
         customer_select = CustomerSelectDialog()
