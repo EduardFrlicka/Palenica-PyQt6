@@ -42,10 +42,10 @@ def perform_update():
         msgBox.show()
         msgBox.exec()
 
-    msgBox = QMessageBox()
+    # msgBox = QMessageBox()
     # run msgBox in separate thread
-    thread = threading.Thread(target=update_dialog_thread)
-    thread.start()
+    # thread = threading.Thread(target=update_dialog_thread)
+    # thread.start()
 
     asset_url = find_asset_url("windows-latest.zip")
     download_file(asset_url, zip_name)
@@ -54,9 +54,9 @@ def perform_update():
         if "updater.exe" in zip_ref.namelist():
             zip_ref.extract("updater.exe", ".")
 
-    subprocess.run(["updater.exe"])
-    msgBox.close()
-    thread.join()
+    subprocess.run([".\\updater.exe"])
+    # msgBox.close()
+    # thread.join()
     sys.exit()
 
 
