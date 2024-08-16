@@ -1,4 +1,5 @@
 import tomli
+import os
 
 default_config = {
     "main_window": {
@@ -43,7 +44,10 @@ class Config:
 config = Config()
 config.update(default_config)
 
-
-with open("config.toml", "rb") as conf_file:
-    loaded_config = tomli.load(conf_file)
-    config.update(loaded_config)
+if os.path.exists("config.toml"):
+    with open("config.toml", "rb") as conf_file:
+        loaded_config = tomli.load(conf_file)
+        config.update(loaded_config)
+else:
+    with open("config.toml", "w") as conf_file:
+        tomli.dump(default_config, conf_file)
