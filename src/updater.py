@@ -6,10 +6,34 @@ import zipfile
 import subprocess
 import sys
 from PyQt6.QtWidgets import QApplication, QMessageBox
+from PyQt6.QtCore import pyqtSignal
+
 import messages
 import threading
 
 VERSION_FILE = "version.txt"
+
+
+class UpdaterMsgBox(QMessageBox):
+    update_downloaded = pyqtSignal()
+
+    def __init__(self):
+        super().__init__()
+        self.update_downloaded.connect(self.close)
+
+    def show(self):
+        self.setText("Aktualizácia")
+        self.setText(messages.UPDATE_IN_PROGRESS)
+        self.setIcon(QMessageBox.Icon.Information)
+        self.setStandardButtons(QMessageBox.StandardButton.NoButton)
+        super().show()
+
+    def exec(self):
+        super().exec()
+
+    def close(self):
+        super().close()
+        sys.exit()
 
 
 if config.get("updater", "allow_updates", default=True):
@@ -34,7 +58,7 @@ def download_file(url, local_filename):
 
 
 def perform_update():
-    msgBox = QMessageBox()
+    msgBox = UpdaterMsgBox()
 
     def _download_and_run_updater():
         asset_url = find_asset_url("windows-latest.zip")
@@ -44,20 +68,21 @@ def perform_update():
             if "updater.exe" in zip_ref.namelist():
                 zip_ref.extract("updater.exe", ".")
 
-        subprocess.Popen(["start", ".\\updater.exe"], shell=True)
-        msgBox.close()
+        # if on windows, run the updater
+        if sys.platform == "win32":
+            subprocess.Popen(["start", ".\\updater.exe"], shell=True)
+        else:
+            print("Updater not supported on this platform")
 
-    msgBox.setText("Aktualizácia")
-    msgBox.setText(messages.UPDATE_IN_PROGRESS)
-    msgBox.setIcon(QMessageBox.Icon.Information)
-    msgBox.setStandardButtons()
+        msgBox.update_downloaded.emit()
+
     msgBox.show()
 
     threading.Thread(target=_download_and_run_updater).start()
 
-    msgBox.exec()
+    print("Update in progress")
 
-    sys.exit()
+    msgBox.exec()
 
 
 def extract_update(progress_callback, finished_callback):
