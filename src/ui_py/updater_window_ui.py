@@ -35,6 +35,7 @@ class Ui_Updater(object):
         Updater.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(Updater)
+        self.pushButton.clicked.connect(Updater.ok) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(Updater)
 
     def retranslateUi(self, Updater):

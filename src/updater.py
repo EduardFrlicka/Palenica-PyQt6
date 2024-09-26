@@ -35,7 +35,6 @@ class UpdaterMsgBox(QMessageBox):
         super().close()
         sys.exit()
 
-
 if config.get("updater", "allow_updates", default=True):
     RELEASE_URL = config.get("updater", "url")
     latest_json = json.loads(requests.api.get(RELEASE_URL).text)

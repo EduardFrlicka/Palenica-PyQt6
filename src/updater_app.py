@@ -1,8 +1,10 @@
 from ui_py.updater_window_ui import Ui_Updater
 from PyQt6.QtWidgets import QMainWindow, QApplication
+from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtCore import Qt
 from threading import Thread
 import updater
+import sys
 
 
 class UpdaterWindow(Ui_Updater, QMainWindow):
@@ -16,6 +18,9 @@ class UpdaterWindow(Ui_Updater, QMainWindow):
         
         self.progressBar.setValue(value)
 
+    def ok(self):
+        self.close()
+        sys.exit()
 
 app = QApplication([])
 window = UpdaterWindow()
