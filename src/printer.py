@@ -67,9 +67,7 @@ class OrderPrinter:
                 )
                 for col in self.cols
             ]
-            aditional_space = (self.rect.width() - sum(self.cols_size)) / len(
-                self.cols_size
-            )
+            aditional_space = (self.rect.width() - sum(self.cols_size)) / len(self.cols_size)
             if self.stretch:
                 self.cols_size = [col + aditional_space for col in self.cols_size]
 
@@ -94,12 +92,7 @@ class OrderPrinter:
             ]
 
             if self.title:
-                self.rect.setHeight(
-                    sum(self.rows_size)
-                    + self.painter.boundingRect(
-                        self.rect, self.title, WORD_WRAP_LEFT
-                    ).height()
-                )
+                self.rect.setHeight(sum(self.rows_size) + self.painter.boundingRect(self.rect, self.title, WORD_WRAP_LEFT).height())
             else:
                 self.rect.setHeight(sum(self.rows_size))
 
@@ -115,9 +108,7 @@ class OrderPrinter:
         def paint(self):
             rect = QtCore.QRectF(self.rect)
             if self.title:
-                title_rect = self.painter.boundingRect(
-                    self.rect, self.title, WORD_WRAP_LEFT
-                )
+                title_rect = self.painter.boundingRect(self.rect, self.title, WORD_WRAP_LEFT)
                 self.painter.drawText(title_rect, self.title, WORD_WRAP_LEFT)
                 rect.setTop(rect.top() + title_rect.height())
 
@@ -147,10 +138,8 @@ class OrderPrinter:
 
         printer.setPageSize(QtGui.QPageSize(QtGui.QPageSize.PageSizeId.A4))
         printer.setPageOrientation(QtGui.QPageLayout.Orientation.Portrait)
-        printer.setCopyCount(config.config.get("printer", {}).get("copy_count"))
-        printer.setPageMargins(
-            QtCore.QMarginsF(4.0, 4.0, 4.0, 4.0), QtGui.QPageLayout.Unit.Point
-        )
+        printer.setCopyCount(config.config.get("printer", "copies"))
+        printer.setPageMargins(QtCore.QMarginsF(4.0, 4.0, 4.0, 4.0), QtGui.QPageLayout.Unit.Point)
 
         painter.begin(printer)
         painter.setPen(QtGui.QPen(QtGui.QColor().black(), 1.1))
@@ -291,12 +280,8 @@ class OrderPrinter:
             rect_customer.setLeft(rect.left() + rect.width() * 2 / 4)
             rect_customer.setRight(rect.right() - rect.width() * 1 / 4)
             height = max(
-                painter.boundingRect(
-                    rect_customer, sign_customer, WORD_WRAP_CENTER
-                ).height(),
-                painter.boundingRect(
-                    rect_employee, sign_employee, WORD_WRAP_CENTER
-                ).height(),
+                painter.boundingRect(rect_customer, sign_customer, WORD_WRAP_CENTER).height(),
+                painter.boundingRect(rect_employee, sign_employee, WORD_WRAP_CENTER).height(),
             )
 
             rect_employee.setTop(rect.top() - height)
@@ -400,12 +385,7 @@ class OrderPrinter:
                     )
                 ]
 
-                row_height = max(
-                    [
-                        max(pair_bound[0].height(), pair_bound[1].height())
-                        for pair_bound in row_bounds
-                    ]
-                )
+                row_height = max([max(pair_bound[0].height(), pair_bound[1].height()) for pair_bound in row_bounds])
 
                 for pair_bound, pair_texts in zip(row_bounds, row):
                     pair_bound[0].setHeight(row_height)
@@ -454,21 +434,14 @@ class OrderPrinter:
                 for distilling in order.distillings
             ]
 
-            table_distillings = self.TablePrint(
-                painter, [distillings_header, *distillings], rect
-            )
+            table_distillings = self.TablePrint(painter, [distillings_header, *distillings], rect)
             table_distillings.paint()
 
             return table_distillings.rect
 
         def paint_dilute(rect: QtCore.QRectF):
             dilute_header = [f"{val * 100:.0f}%" for val in constants.DILUTE_TARGETS]
-            dilute_cells = calculations.calculate_dillute_table(
-                [
-                    distilling.alcohol_percentage_at_20
-                    for distilling in order.distillings
-                ]
-            )
+            dilute_cells = calculations.calculate_dillute_table([distilling.alcohol_percentage_at_20 for distilling in order.distillings])
 
             table_dilute = self.TablePrint(
                 painter,
@@ -481,9 +454,7 @@ class OrderPrinter:
             return table_dilute.rect
 
         def paint_costs(rect: QtCore.QRectF):
-            sum_la = sum(
-                [distilling.alcohol_volume_la for distilling in order.distillings]
-            )
+            sum_la = sum([distilling.alcohol_volume_la for distilling in order.distillings])
 
             costs_cells = [
                 [
@@ -502,9 +473,7 @@ class OrderPrinter:
                 ["DPH 20%", f"{order.tax_vat:.2f}"],
             ]
 
-            cost_sum_cells = [
-                ["Spolu zaplatené pestovateľom s DPH v €", f"{order.cost_sum:.2f}"]
-            ]
+            cost_sum_cells = [["Spolu zaplatené pestovateľom s DPH v €", f"{order.cost_sum:.2f}"]]
 
             # set pen to bold
 
@@ -542,9 +511,7 @@ class OrderPrinter:
             notes_rect.setTop(notes_rect.top() + TABLE_VERTICAL_MARGIN)
             notes_rect.setBottom(notes_rect.bottom() - TABLE_VERTICAL_MARGIN)
 
-            notes_rect_height = painter.boundingRect(
-                notes_rect, text, WORD_WRAP_LEFT
-            ).height()
+            notes_rect_height = painter.boundingRect(notes_rect, text, WORD_WRAP_LEFT).height()
             notes_rect.setHeight(notes_rect_height)
 
             painter.drawText(notes_rect, text, WORD_WRAP_LEFT)
@@ -560,9 +527,7 @@ class OrderPrinter:
             return rect
 
         # Layout constant shift
-        layout.setBottomRight(
-            layout.bottomRight() - layout.topLeft() - layout.topLeft()
-        )
+        layout.setBottomRight(layout.bottomRight() - layout.topLeft() - layout.topLeft())
 
         header_rect = print_header()
         footer_rect = print_footer()

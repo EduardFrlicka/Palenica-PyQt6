@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1439</width>
+    <width>1115</width>
     <height>636</height>
    </rect>
   </property>
@@ -67,16 +67,6 @@
        <item>
         <property name="text">
          <string/>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>A</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>B</string>
         </property>
        </item>
       </widget>
@@ -479,27 +469,12 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="lineEdit_date">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
+          <widget class="QDateEdit" name="dateEdit">
+           <property name="displayFormat">
+            <string>d.M.yyyy</string>
            </property>
-           <property name="inputMask">
-            <string/>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="cursorPosition">
-            <number>0</number>
-           </property>
-           <property name="placeholderText">
-            <string/>
-           </property>
-           <property name="cursorMoveStyle">
-            <enum>Qt::CursorMoveStyle::LogicalMoveStyle</enum>
+           <property name="calendarPopup">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -918,11 +893,11 @@
    <slot>print_save()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1210</x>
+     <x>951</x>
      <y>609</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1145</x>
+     <x>1114</x>
      <y>629</y>
     </hint>
    </hints>
@@ -934,11 +909,11 @@
    <slot>print()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1291</x>
+     <x>1032</x>
      <y>576</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1431</x>
+     <x>1114</x>
      <y>581</y>
     </hint>
    </hints>
@@ -950,12 +925,28 @@
    <slot>save()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1405</x>
+     <x>1103</x>
      <y>546</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1436</x>
+     <x>1114</x>
      <y>539</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dateEdit</sender>
+   <signal>dateChanged(QDate)</signal>
+   <receiver>CreateDistillingTab</receiver>
+   <slot>date_edit()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>232</x>
+     <y>614</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>288</x>
+     <y>627</y>
     </hint>
    </hints>
   </connection>
@@ -964,5 +955,6 @@
   <slot>print()</slot>
   <slot>save()</slot>
   <slot>print_save()</slot>
+  <slot>date_edit()</slot>
  </slots>
 </ui>

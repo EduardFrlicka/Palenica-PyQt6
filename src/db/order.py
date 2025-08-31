@@ -1,5 +1,5 @@
 from .base import Base, STRING_LEN
-from sqlalchemy import ForeignKey, Integer, String, Date, Float
+from sqlalchemy import ForeignKey, Integer, String, Date, Float, Sequence
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Any, List
 from datetime import date
@@ -8,7 +8,8 @@ import db
 
 class Order(Base):
     __tablename__ = "order"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id_seq = Sequence("order_id_seq", start=1, increment=1)
+    id: Mapped[int] = mapped_column(Integer, id_seq, primary_key=True)
 
     mark: Mapped[str] = mapped_column(String(STRING_LEN))
 

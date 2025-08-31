@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QTabBar
+from PyQt6.QtWidgets import QTabBar, QHeaderView
 from ui_py.distillings_tab_ui import Ui_DistillingsTab
 from PyQt6.QtWidgets import QStyledItemDelegate
 from PyQt6.QtCore import QModelIndex, Qt
@@ -15,11 +15,8 @@ class DistillingsTab(Ui_DistillingsTab, QTabBar):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-
-    def showEvent(self, a0: QShowEvent | None) -> None:
-        res = super().showEvent(a0)
         self.loadData()
-        return res
+        self.seasonSelect.enable_empty(True)
 
     def loadData(self):
         self.order_model = OrderModelView(self)
@@ -33,10 +30,33 @@ class DistillingsTab(Ui_DistillingsTab, QTabBar):
         self.order_table.sortByColumn(2, Qt.SortOrder.AscendingOrder)
         self.order_table.resizeColumnsToContents()
 
+    def showEvent(self, a0):
+        self.resize_table()
+        return super().showEvent(a0)
+    
+    def resizeEvent(self, a0):
+        self.resize_table()
+        return super().resizeEvent(a0)
+
+    def resize_table(self):
+        header = self.order_table.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+        self.order_table.resizeColumnsToContents()
+        table_width = self.order_table.viewport().width()
+        columns = self.order_table.model().columnCount()
+        hidden_columns = [i for i in range(columns) if self.order_table.isColumnHidden(i)]
+        visible_columns = [i for i in range(columns) if i not in hidden_columns]
+        used_width = sum(header.sectionSize(i) for i in visible_columns)
+        remaining = table_width - used_width
+        if remaining > 0 and visible_columns:
+            extra = remaining // len(visible_columns)
+            for i in visible_columns:
+                header.resizeSection(i, header.sectionSize(i) + extra)
+
     def order_selected(self, index: QModelIndex):
         order_id = index.siblingAtColumn(0).data()
         print("selected", order_id)
-        with Session(db.engine) as session:
+        with db.get_session() as session:
             self.order = session.query(db.Order).get(order_id)
 
     def mark_edited(self, text: str):
@@ -84,3 +104,11 @@ class DistillingsTab(Ui_DistillingsTab, QTabBar):
             birthday = None
 
         self.filter_model.filterBirthday(birthday)
+
+    def season_edited(self, season_id: int ):
+        if season_id < 0:
+            self.filter_model.filterSeason(None)
+        else:
+            self.filter_model.filterSeason(season_id)
+
+    

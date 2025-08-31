@@ -74,32 +74,54 @@ class CustomerSortFilterModel(QSortFilterProxyModel):
 
 
 class CustomerModelView(QAbstractTableModel):
-    def __init__(self, parent: QObject | None = ...) -> None:
+    def __init__(self, season_id: int, parent: QObject | None = ...) -> None:
         super().__init__(parent)
-        with Session(db.engine) as session:
-            self.customers = [
-                (
-                    row[0].id,
-                    row[0].name,
-                    row[0].address,
-                    row[0].birthday,
-                    row[1],
-                    row[0].phone_number,
-                )
-                for row in session.query(
-                    db.Customer,
-                    func.sum(
-                        case(
-                            (db.Season.active, db.Distilling.alcohol_volume_la),
-                            else_=0.0,
-                        )
-                    ),
-                )
-                .outerjoin(db.Order, db.Customer.id == db.Order.customer_id)
-                .outerjoin(db.Distilling, db.Distilling.order_id == db.Order.id)
-                .outerjoin(db.Season, db.Season.id == db.Order.season_id)
-                .group_by(db.Customer)
-            ]
+        self.season_id = season_id
+        with db.get_session() as session:
+            if self.season_id == -1 or self.season_id is None:
+                # Sum for all seasons
+                self.customers = [
+                    (
+                        row[0].id,
+                        row[0].name,
+                        row[0].address,
+                        row[0].birthday,
+                        row[1],
+                        row[0].phone_number,
+                    )
+                    for row in session.query(
+                        db.Customer,
+                        func.sum(db.Distilling.alcohol_volume_la),
+                    )
+                    .outerjoin(db.Order, db.Customer.id == db.Order.customer_id)
+                    .outerjoin(db.Distilling, db.Distilling.order_id == db.Order.id)
+                    .group_by(db.Customer)
+                ]
+            else:
+                # Sum only for the selected season
+                self.customers = [
+                    (
+                        row[0].id,
+                        row[0].name,
+                        row[0].address,
+                        row[0].birthday,
+                        row[1],
+                        row[0].phone_number,
+                    )
+                    for row in session.query(
+                        db.Customer,
+                        func.sum(
+                            case(
+                                (db.Season.id == self.season_id, db.Distilling.alcohol_volume_la),
+                                else_=0.0,
+                            )
+                        ),
+                    )
+                    .outerjoin(db.Order, db.Customer.id == db.Order.customer_id)
+                    .outerjoin(db.Distilling, db.Distilling.order_id == db.Order.id)
+                    .outerjoin(db.Season, db.Season.id == db.Order.season_id)
+                    .group_by(db.Customer)
+                ]
         self._headers = [
             "id",
             "Meno a priezvisko",

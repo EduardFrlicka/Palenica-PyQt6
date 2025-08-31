@@ -2,7 +2,6 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLineEdit
 from PyQt6.QtCore import pyqtSignal
 from ui_py.distilling_input_ui import Ui_distilling_input
 from temperature_table import TEMPERATURE_TABLE
-from constants import LOWER_TAX, FULL_TAX, LOWER_TAX_LA_LIMIT
 import db
 from dialogs.alert import alert
 import messages
@@ -12,7 +11,7 @@ class DistillingInput(Ui_distilling_input, QWidget):
     tax_edited = pyqtSignal()
     la_edited = pyqtSignal()
 
-    def __init__(self, parent: QWidget):
+    def __init__(self, parent: QWidget, calculation_constants: db.CalculationConstants):
         super().__init__(parent=parent)
         self.setupUi(self)
         self.delete_line_button.clicked.connect(self.remove_self)
@@ -28,6 +27,7 @@ class DistillingInput(Ui_distilling_input, QWidget):
         self.lower_tax = None
         self.full_tax = None
         self.sum_tax = 0
+        self.calculation_constants = calculation_constants
 
     def remove_self(self):
         layout_distilling_inputs = self.parent().findChild(
@@ -42,17 +42,17 @@ class DistillingInput(Ui_distilling_input, QWidget):
             return
         tax_updated = False
 
-        if self.customer_la > LOWER_TAX_LA_LIMIT:
+        if self.customer_la > self.calculation_constants.lower_tax_la_limit:
             new_lower_tax = 0.0
-            new_full_tax = self.alcohol_volume_la * FULL_TAX
-        elif self.customer_la + self.alcohol_volume_la <= LOWER_TAX_LA_LIMIT:
+            new_full_tax = self.alcohol_volume_la * self.calculation_constants.full_tax
+        elif self.customer_la + self.alcohol_volume_la <= self.calculation_constants.lower_tax_la_limit:
             new_full_tax = 0.0
-            new_lower_tax = self.alcohol_volume_la * LOWER_TAX
+            new_lower_tax = self.alcohol_volume_la * self.calculation_constants.lower_tax
         else:
-            new_lower_tax = (LOWER_TAX_LA_LIMIT - self.customer_la) * LOWER_TAX
+            new_lower_tax = (self.calculation_constants.lower_tax_la_limit - self.customer_la) * self.calculation_constants.lower_tax
             new_full_tax = (
-                self.customer_la + self.alcohol_volume_la - LOWER_TAX_LA_LIMIT
-            ) * FULL_TAX
+                self.customer_la + self.alcohol_volume_la - self.calculation_constants.lower_tax_la_limit
+            ) * self.calculation_constants.full_tax
 
         if self.lower_tax != new_lower_tax:
             tax_updated = True

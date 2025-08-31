@@ -15,7 +15,7 @@ class CustomerHandler(QWidget, Ui_CustomerHandler):
         super().__init__(parent)
         self.setupUi(self)
         self.change_customer()
-        if db.engine is None:
+        if db.get_engine() is None:
             self.manual_customer()
 
     def select_customer(self):
@@ -70,7 +70,7 @@ class CustomerHandler(QWidget, Ui_CustomerHandler):
 
     def load_customer(self, customer: db.Customer):
         self.customer = customer
-        with Session(db.engine) as session:
+        with db.get_session() as session:
             self.la = db.get_customer_la(customer, session)
 
         self.le_address.setText(self.customer.address)

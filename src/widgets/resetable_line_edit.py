@@ -12,12 +12,14 @@ class ResetableLineEdit(Ui_ResetableLineEdit, QWidget):
         self.reset_button.clicked.connect(self.reset_default)
         self.lineEdit.textEdited.connect(self.user_edited)
         self.default_value = None
+        self.float_decimals = 2
         self.reset_default()
 
     def setDefault(self, value):
         if self.is_default:
             self._setEdit(value)
             self.value = value
+            self.default_value = value
         else:
             self.default_value = value
 
@@ -25,7 +27,7 @@ class ResetableLineEdit(Ui_ResetableLineEdit, QWidget):
         if value is None:
             self.lineEdit.setText("")
         if (isinstance(value, float)):
-            self.lineEdit.setText(f"{value:.2f}")
+            self.lineEdit.setText(f"{value:.{self.float_decimals}f}")
 
     def collect(self, value_type: type):
         try:

@@ -12,7 +12,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_CreateDistillingTab(object):
     def setupUi(self, CreateDistillingTab):
         CreateDistillingTab.setObjectName("CreateDistillingTab")
-        CreateDistillingTab.resize(1439, 636)
+        CreateDistillingTab.resize(1115, 636)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -47,8 +47,6 @@ class Ui_CreateDistillingTab(object):
         self.cb_production_line.setObjectName("cb_production_line")
         self.cb_production_line.addItem("")
         self.cb_production_line.setItemText(0, "")
-        self.cb_production_line.addItem("")
-        self.cb_production_line.addItem("")
         self.horizontalLayout.addWidget(self.cb_production_line)
         self.verticalLayout.addLayout(self.horizontalLayout)
         self.customer_handler = CustomerHandler(parent=CreateDistillingTab)
@@ -232,19 +230,10 @@ class Ui_CreateDistillingTab(object):
         self.label_date = QtWidgets.QLabel(parent=CreateDistillingTab)
         self.label_date.setObjectName("label_date")
         self.horizontal_date.addWidget(self.label_date)
-        self.lineEdit_date = QtWidgets.QLineEdit(parent=CreateDistillingTab)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.lineEdit_date.sizePolicy().hasHeightForWidth())
-        self.lineEdit_date.setSizePolicy(sizePolicy)
-        self.lineEdit_date.setInputMask("")
-        self.lineEdit_date.setText("")
-        self.lineEdit_date.setCursorPosition(0)
-        self.lineEdit_date.setPlaceholderText("")
-        self.lineEdit_date.setCursorMoveStyle(QtCore.Qt.CursorMoveStyle.LogicalMoveStyle)
-        self.lineEdit_date.setObjectName("lineEdit_date")
-        self.horizontal_date.addWidget(self.lineEdit_date)
+        self.dateEdit = QtWidgets.QDateEdit(parent=CreateDistillingTab)
+        self.dateEdit.setCalendarPopup(True)
+        self.dateEdit.setObjectName("dateEdit")
+        self.horizontal_date.addWidget(self.dateEdit)
         self.reset_button_date = QtWidgets.QPushButton(parent=CreateDistillingTab)
         self.reset_button_date.setEnabled(True)
         self.reset_button_date.setText("")
@@ -433,6 +422,7 @@ class Ui_CreateDistillingTab(object):
         self.button_SavePrint.clicked.connect(CreateDistillingTab.print_save) # type: ignore
         self.button_Print.clicked.connect(CreateDistillingTab.print) # type: ignore
         self.button_Save.clicked.connect(CreateDistillingTab.save) # type: ignore
+        self.dateEdit.dateChanged['QDate'].connect(CreateDistillingTab.date_edit) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(CreateDistillingTab)
 
     def retranslateUi(self, CreateDistillingTab):
@@ -440,8 +430,6 @@ class Ui_CreateDistillingTab(object):
         CreateDistillingTab.setWindowTitle(_translate("CreateDistillingTab", "CreateDistillingTab"))
         self.label.setText(_translate("CreateDistillingTab", "Číslo dokladu:"))
         self.label_2.setText(_translate("CreateDistillingTab", "Kolóna:"))
-        self.cb_production_line.setItemText(1, _translate("CreateDistillingTab", "A"))
-        self.cb_production_line.setItemText(2, _translate("CreateDistillingTab", "B"))
         self.label_ferment_volume.setText(_translate("CreateDistillingTab", "Množstvo prijatého kvasu v litroch"))
         self.label_ferment_type.setText(_translate("CreateDistillingTab", "Druh prijatého kvasu"))
         self.label_alcohol_volume.setText(_translate("CreateDistillingTab", "Množstvo vyrobeného destilátu v l "))
@@ -464,6 +452,7 @@ class Ui_CreateDistillingTab(object):
         item.setText(_translate("CreateDistillingTab", "55%"))
         self.label_notes.setText(_translate("CreateDistillingTab", "Poznámky"))
         self.label_date.setText(_translate("CreateDistillingTab", "Dátum výroby destilátu:"))
+        self.dateEdit.setDisplayFormat(_translate("CreateDistillingTab", "d.M.yyyy"))
         self.label_service_cost.setText(_translate("CreateDistillingTab", "Cena za službu s DPH v €"))
         self.label_operating_costs.setText(_translate("CreateDistillingTab", "Ostatné náklady s DPH v €"))
         self.label_cost_per_liter.setText(_translate("CreateDistillingTab", "Cena za liter 50%"))

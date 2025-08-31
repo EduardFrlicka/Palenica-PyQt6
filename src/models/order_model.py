@@ -8,7 +8,6 @@ from PyQt6.QtCore import (
 )
 from datetime import date
 from sqlalchemy.sql import func
-from sqlalchemy import case
 from sqlalchemy.orm import Session
 import db
 
@@ -21,6 +20,7 @@ class OrderSortFilterModel(QSortFilterProxyModel):
         self.production_date = None
         self.name = None
         self.birthday: date | None = None
+        self.season_id = None
 
     def filterMark(self, mark: str):
         self.mark = mark
@@ -42,8 +42,18 @@ class OrderSortFilterModel(QSortFilterProxyModel):
         if self.birthday != birthday:
             self.birthday = birthday
             self.invalidateRowsFilter()
+        
+    def filterSeason(self, season_id: int | None):
+        if self.season_id != season_id:
+            self.season_id = season_id
+            self.invalidateRowsFilter()
 
     def filterAcceptsRow(self, source_row: int, source_parent: QModelIndex) -> bool:
+        if self.season_id:
+            season_id = self.sourceModel().index(source_row, 1).data()
+            if season_id != self.season_id:
+                return False
+        
         if self.mark:
             mark = self.sourceModel().index(source_row, 2).data()
             if self.mark not in mark:
@@ -69,7 +79,7 @@ class OrderSortFilterModel(QSortFilterProxyModel):
             birthday: date = self.sourceModel().index(source_row, 7).data()
             if self.birthday != birthday:
                 return False
-
+        
         return True
 
     def lessThan(self, left: QModelIndex, right: QModelIndex) -> bool:
@@ -85,7 +95,7 @@ class OrderSortFilterModel(QSortFilterProxyModel):
 class OrderModelView(QAbstractTableModel):
     def __init__(self, parent: QObject | None = ...) -> None:
         super().__init__(parent)
-        with Session(db.engine) as session:
+        with db.get_session() as session:
             self._data = [
                 (
                     row[0].id,
@@ -109,7 +119,7 @@ class OrderModelView(QAbstractTableModel):
                 .outerjoin(db.Season)
                 .outerjoin(db.ProductionLine)
                 .outerjoin(db.Distilling)
-                .group_by(db.Order)
+                .group_by(db.Order, db.Customer, db.Season, db.ProductionLine)
             ]
 
         self._headers = [

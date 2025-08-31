@@ -2,6 +2,8 @@ from PyQt6.QtWidgets import QMessageBox
 
 
 def alert(text: str):
+    print("Alert: ", text)
+
     msgBox = QMessageBox()
     msgBox.setIcon(QMessageBox.Icon.Critical)
     msgBox.setText(text)
@@ -11,8 +13,13 @@ def alert(text: str):
 
     msgBox.exec()
 
+    if msgBox.clickedButton() != msgBox.button(QMessageBox.StandardButton.Ok):
+        print("Alert was not closed with OK button.")
+        raise Exception("Alert was not closed with OK button.")
 
 def error(text: str):
+    print("Error: ", text)
+
     msgBox = QMessageBox()
     msgBox.setIcon(QMessageBox.Icon.Critical)
     msgBox.setText(text)

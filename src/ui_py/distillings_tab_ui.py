@@ -12,7 +12,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_DistillingsTab(object):
     def setupUi(self, DistillingsTab):
         DistillingsTab.setObjectName("DistillingsTab")
-        DistillingsTab.resize(1023, 277)
+        DistillingsTab.resize(877, 328)
         self.verticalLayout = QtWidgets.QVBoxLayout(DistillingsTab)
         self.verticalLayout.setObjectName("verticalLayout")
         self.horizontal_serach_bar = QtWidgets.QHBoxLayout()
@@ -99,24 +99,42 @@ class Ui_DistillingsTab(object):
         self.vertical_season = QtWidgets.QVBoxLayout()
         self.vertical_season.setObjectName("vertical_season")
         self.label_3 = QtWidgets.QLabel(parent=DistillingsTab)
-        self.label_3.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
-        self.label_3.setObjectName("label_3")
-        self.vertical_season.addWidget(self.label_3)
-        self.cb_season = QtWidgets.QComboBox(parent=DistillingsTab)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.cb_season.sizePolicy().hasHeightForWidth())
-        self.cb_season.setSizePolicy(sizePolicy)
-        self.cb_season.setObjectName("cb_season")
-        self.cb_season.addItem("")
-        self.cb_season.setItemText(0, "")
-        self.vertical_season.addWidget(self.cb_season)
+        sizePolicy.setHeightForWidth(self.label_3.sizePolicy().hasHeightForWidth())
+        self.label_3.setSizePolicy(sizePolicy)
+        self.label_3.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeading|QtCore.Qt.AlignmentFlag.AlignLeft|QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self.label_3.setObjectName("label_3")
+        self.vertical_season.addWidget(self.label_3)
+        self.seasonSelect = SeasonSelect(parent=DistillingsTab)
+        self.seasonSelect.setObjectName("seasonSelect")
+        self.vertical_season.addWidget(self.seasonSelect)
         self.horizontal_serach_bar.addLayout(self.vertical_season)
+        self.buttonRefresh = QtWidgets.QPushButton(parent=DistillingsTab)
+        self.buttonRefresh.setEnabled(True)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.buttonRefresh.sizePolicy().hasHeightForWidth())
+        self.buttonRefresh.setSizePolicy(sizePolicy)
+        self.buttonRefresh.setSizeIncrement(QtCore.QSize(1, 1))
+        self.buttonRefresh.setText("")
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("src/ui/../../../../../../resources/undo_icon.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.buttonRefresh.setIcon(icon)
+        self.buttonRefresh.setCheckable(False)
+        self.buttonRefresh.setAutoDefault(False)
+        self.buttonRefresh.setDefault(False)
+        self.buttonRefresh.setFlat(False)
+        self.buttonRefresh.setObjectName("buttonRefresh")
+        self.horizontal_serach_bar.addWidget(self.buttonRefresh)
         self.verticalLayout.addLayout(self.horizontal_serach_bar)
         self.order_table = QtWidgets.QTableView(parent=DistillingsTab)
+        self.order_table.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.SizeAdjustPolicy.AdjustIgnored)
         self.order_table.setObjectName("order_table")
         self.order_table.verticalHeader().setVisible(False)
+        self.order_table.verticalHeader().setCascadingSectionResizes(False)
         self.verticalLayout.addWidget(self.order_table)
 
         self.retranslateUi(DistillingsTab)
@@ -126,6 +144,8 @@ class Ui_DistillingsTab(object):
         self.le_name.textEdited['QString'].connect(DistillingsTab.name_edited) # type: ignore
         self.le_birthday.textEdited['QString'].connect(DistillingsTab.birthday_edited) # type: ignore
         self.le_production_date.textEdited['QString'].connect(DistillingsTab.production_date_edited) # type: ignore
+        self.seasonSelect.seasonSelected['int'].connect(DistillingsTab.season_edited) # type: ignore
+        self.buttonRefresh.clicked.connect(DistillingsTab.loadData) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(DistillingsTab)
 
     def retranslateUi(self, DistillingsTab):
@@ -139,3 +159,4 @@ class Ui_DistillingsTab(object):
         self.label_name.setText(_translate("DistillingsTab", "Meno a priezvisko:"))
         self.label_birthday.setText(_translate("DistillingsTab", "Dátum nar.:"))
         self.label_3.setText(_translate("DistillingsTab", "Sezóna:"))
+from widgets.season_select import SeasonSelect

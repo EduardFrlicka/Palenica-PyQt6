@@ -1,5 +1,5 @@
 from .base import Base, STRING_LEN
-from sqlalchemy import ForeignKey, Integer, String, Date, Float
+from sqlalchemy import ForeignKey, Integer, String, Date, Float, Sequence
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List
 from datetime import date, datetime
@@ -8,7 +8,8 @@ import db
 
 class Customer(Base):
     __tablename__ = "customer"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id_seq = Sequence("customer_id_seq", start=1, increment=1)
+    id: Mapped[int] = mapped_column(Integer, id_seq, primary_key=True)
     name: Mapped[str] = mapped_column(String(STRING_LEN))
     address: Mapped[str] = mapped_column(String(STRING_LEN))
     birthday: Mapped[date] = mapped_column(Date)

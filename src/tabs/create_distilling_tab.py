@@ -10,7 +10,7 @@ from ui_py.create_distilling_tab_ui import Ui_CreateDistillingTab
 import resources
 from widgets.distilling_input import DistillingInput
 from datetime import datetime
-from constants import SERVICE_COST_PER_LA, VAT_TAX, FULL_TAX, LOWER_TAX, DATE_FORMAT
+from constants import DATE_FORMAT
 from dialogs.customer_select import CustomerSelectDialog
 from sqlalchemy.orm import Session
 from datetime import date
@@ -27,12 +27,14 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
         self.setupUi(self)
         self.label_year.setText(f"/{date.today().year}")
         self.date_reset()
-        self.add_distillating_input()
-        self.label_lower_tax.setText(f"Suma spotrebnej dane {LOWER_TAX:.3f} €/la")
-        self.label_full_tax.setText(f"Suma spotrebnej dane {FULL_TAX:.3f} €/la")
-        self.lineEdit_date.textEdited.connect(self.date_edit)
+        self.calculation_constants = db.CalculationConstants.get()
+        self.cb_production_line.clear()
+        self.cb_production_line.addItems([line.name for line in db.get_production_lines()])
+        self.add_distilling_input()
+        self.label_lower_tax.setText(f"Suma spotrebnej dane {self.calculation_constants.lower_tax:.3f} €/la")
+        self.label_full_tax.setText(f"Suma spotrebnej dane {self.calculation_constants.full_tax:.3f} €/la")
         self.reset_button_date.clicked.connect(self.date_reset)
-        self.button_add_distilling_input.clicked.connect(self.add_distillating_input)
+        self.button_add_distilling_input.clicked.connect(self.add_distilling_input)
         self.setWindowModality(Qt.WindowModality.WindowModal)
         self.rle_operating_costs.setDefault(0.0)
         self.setWindowState(Qt.WindowState.WindowMaximized)
@@ -45,8 +47,8 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
             if not enabled:
                 button.hide()
 
-    def add_distillating_input(self):
-        new_distilling_input = DistillingInput(parent=self)
+    def add_distilling_input(self):
+        new_distilling_input = DistillingInput(parent=self, calculation_constants=self.calculation_constants)
         new_distilling_input.setObjectName("distilling_input")
         new_distilling_input.tax_edited.connect(self.update_costs)
         new_distilling_input.la_edited.connect(self.distribute_la)
@@ -87,17 +89,15 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
                 self.diluteTable.setItem(row, col, QTableWidgetItem(value))
 
     def date_edit(self):
-        self.reset_button_date.show()
-        try:
-            self.production_date = datetime.strptime(
-                self.lineEdit_date.text().replace(" ", ""), DATE_FORMAT
-            ).date()
-        except ValueError:
-            self.production_date = None
+        self.production_date = self.dateEdit.date().toPyDate()
+        if self.production_date != date.today():
+            self.reset_button_date.show()
+        else:
+            self.reset_button_date.hide()
 
     def date_reset(self):
         self.reset_button_date.hide()
-        self.lineEdit_date.setText(date.today().strftime(DATE_FORMAT))
+        self.dateEdit.setDate(date.today())
         self.production_date = date.today()
 
     @staticmethod
@@ -115,7 +115,7 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
             sum_taxes += distilling_input.sum_tax
             sum_la += distilling_input.alcohol_volume_la
 
-        self.rle_service_cost.setDefault(max(0, sum_la * SERVICE_COST_PER_LA))
+        self.rle_service_cost.setDefault(max(0, sum_la * self.calculation_constants.service_cost * 2.0))
         self.service_cost = self.rle_service_cost.value
 
         self.operating_costs = (
@@ -129,7 +129,7 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
         self.le_cost_sum.setText(f"{self.cost_sum:.2f}")
 
         self.tax_base = round(
-            (self.service_cost + self.operating_costs) / (1 + VAT_TAX), 2
+            (self.service_cost + self.operating_costs) / (1 + self.calculation_constants.vat_tax), 2
         )
         self.le_tax_base.setText(f"{self.tax_base:.2f}")
 
@@ -145,7 +145,7 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
             self.le_cost_per_liter.setText(f"{self.cost_per_liter:.2f}")
 
     def print_save(self):
-        with Session(db.engine) as session:
+        with db.get_session() as session:
             order = self.create_order(session)
             if order is None:
                 return
@@ -154,15 +154,15 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
             self.print_order(order)
 
     def print(self):
-        with Session(db.engine) as session:
+        with db.get_session() as session:
             order = self.create_order(session)
             if order is None:
                 return
 
-            self.print_order(order, session)
+            self.print_order(order)
 
     def save(self):
-        with Session(db.engine) as session:
+        with db.get_session() as session:
             order = self.create_order(session)
             if order is None:
                 return
@@ -172,7 +172,7 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
     def create_order(self, session: Session = None) -> db.Order:
         distilling_inputs = self.findChildren(DistillingInput)
         if not self.customer_handler.is_manual:
-            season = db.get_active_season(session)
+            season = db.get_active_season(session=session)
             if season is None:
                 alert(messages.ACTIVE_SEASON_NOT_FOUND)
                 return None

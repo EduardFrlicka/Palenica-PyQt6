@@ -1,35 +1,37 @@
-from PyQt6.QtWidgets import QDialog
-from ui_py.customer_select_ui import Ui_CustomerSelect
-from PyQt6.QtWidgets import QStyledItemDelegate
+from datetime import datetime
+from PyQt6.QtWidgets import (
+    QLineEdit,
+    QTableWidgetItem,
+    QTabBar,
+    QPushButton,
+)
 from PyQt6.QtCore import QModelIndex, Qt
-from PyQt6.QtGui import QShowEvent
-from sqlalchemy.orm import Session
-import db
-from datetime import datetime, date
 from constants import DATE_FORMAT
 from dialogs.alert import alert
-from messages import DATABASE_OFFLINE
-
-from models.customer_model import CustomerModelView, CustomerSortFilterModel
+from ui_py.customers_tab_ui import Ui_CustomersTab
 from models.delegates import date_delegate
+from models.customer_model import CustomerModelView, CustomerSortFilterModel
+import db
 
 
-class CustomerSelectDialog(QDialog, Ui_CustomerSelect):
-    def __init__(self) -> None:
-        super().__init__()
+class CustomersTab(Ui_CustomersTab, QTabBar):
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.setupUi(self)
-        self.customer = None
-        self.customer_is_new = False
+
         self.name = None
         self.address = None
         self.birthday = None
         self.phone_number = None
-        self.setWindowState(Qt.WindowState.WindowMaximized)
+        self.season_id = None
+        self.seasonSelect.enable_empty(True)
+
+        self.loadData()
 
     def loadData(self):
-        season = db.get_active_season()
-        season_id = season.id if season else None
-        self.customer_model = CustomerModelView(season_id, self)
+        # season_id = db.get_active_season().id
+        self.seasonSelect.seasonSelected
+        self.customer_model = CustomerModelView(self.season_id, self)
         self.filter_model = CustomerSortFilterModel(self)
         self.filter_model.setSourceModel(self.customer_model)
         self.customer_table.setModel(self.filter_model)
@@ -38,22 +40,14 @@ class CustomerSelectDialog(QDialog, Ui_CustomerSelect):
         self.customer_table.setItemDelegateForColumn(3, date_delegate)
         self.customer_table.sortByColumn(1, Qt.SortOrder.AscendingOrder)
 
-    def showEvent(self, a0: QShowEvent | None) -> None:
-        res = super().showEvent(a0)
-        if db.get_engine() is None:
-            alert(DATABASE_OFFLINE)
-            return res
-        self.loadData()
-        return res
-
-    def customer_selected(self, index: QModelIndex):
-        customer_id = index.siblingAtColumn(0).data()
-        # self.customer_model.customers[index.row()][0]
-        print("selected", customer_id)
-        with db.get_session() as session:
-            self.customer = session.query(db.Customer).get(customer_id)
-        self.accept()
-        pass
+    # def customer_selected(self, index: QModelIndex):
+    #     customer_id = index.siblingAtColumn(0).data()
+    #     # self.customer_model.customers[index.row()][0]
+    #     print("selected", customer_id)
+    #     with db.get_session() as session:
+    #         self.customer = session.query(db.Customer).get(customer_id)
+    #     self.accept()
+    #     pass
 
     def customer_created(self):
         if db.get_engine() is None:
@@ -81,7 +75,6 @@ class CustomerSelectDialog(QDialog, Ui_CustomerSelect):
 
         self.customer_is_new = True
         print("created")
-        self.accept()
         pass
 
     def name_edited(self, text: str):
@@ -103,3 +96,7 @@ class CustomerSelectDialog(QDialog, Ui_CustomerSelect):
     def phone_number_edited(self, text: str):
         self.phone_number = text.replace(" ", "")
         self.filter_model.filterPhoneNumber(text)
+
+    def season_selected(self, season_id: int):
+        self.season_id = season_id
+        self.loadData()

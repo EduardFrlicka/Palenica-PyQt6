@@ -14,13 +14,8 @@ default_config = {
     "printer": {
         "copies": 2,
     },
-    "database": {
-        "engine": "",
-        "user": "",
-        "password": "",
-        "host": "",
-        "port": 0,
-        "path": "",
+    "main_window": {
+        "tabs": ["create_distilling"],
     },
 }
 

@@ -1,12 +1,13 @@
 from .base import Base, STRING_LEN
-from sqlalchemy import ForeignKey, Integer, String, Float
+from sqlalchemy import ForeignKey, Integer, Sequence, String, Float
 from sqlalchemy.orm import Mapped, mapped_column
 import db
 
 
 class Distilling(Base):
     __tablename__ = "distilling"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id_seq = Sequence("distilling_id_seq", start=1, increment=1)
+    id: Mapped[int] = mapped_column(Integer, id_seq, primary_key=True)
     ferment_volume: Mapped[float] = mapped_column(Float)
     ferment_type: Mapped[str] = mapped_column(String(STRING_LEN))
     alcohol_volume: Mapped[float] = mapped_column(Float)
