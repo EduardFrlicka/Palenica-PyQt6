@@ -8,7 +8,7 @@ default_config = {
         "button_SavePrint": True,
     },
     "updater": {
-        "allow_update": True,
+        "allow_updates": True,
         "url": "https://api.github.com/repos/EduardFrlicka/Palenica-PyQt6/releases/latest",
     },
     "printer": {
@@ -65,3 +65,6 @@ else:
 
                 conf_file.write(f"{key} = {value}\n")
             conf_file.write("\n")
+
+
+print(config.config)

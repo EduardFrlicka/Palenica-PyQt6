@@ -46,9 +46,12 @@ def check_and_perform_update():
         return
     latest = get_latest()
     current = get_current()
+
+    print(f"Latest version: {latest}, Current version: {current}")
+
     if latest > current:
         perform_update()
-
+        pass
 
 def download_file(url, local_filename):
     with requests.get(url, stream=True) as r:
@@ -118,4 +121,4 @@ def get_current():
 
 
 def get_latest():
-    return latest_json["published_at"]
+    return latest_json["tag_name"]
