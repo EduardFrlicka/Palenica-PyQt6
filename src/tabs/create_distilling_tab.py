@@ -115,7 +115,7 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
             sum_taxes += distilling_input.sum_tax
             sum_la += distilling_input.alcohol_volume_la
 
-        self.rle_service_cost.setDefault(max(0, sum_la * self.calculation_constants.service_cost * 2.0))
+        self.rle_service_cost.setDefault(max(0, sum_la * self.calculation_constants.service_cost * 2.0 - sum_taxes))
         self.service_cost = self.rle_service_cost.value
 
         self.operating_costs = (
