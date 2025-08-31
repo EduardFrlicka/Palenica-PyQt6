@@ -1,4 +1,4 @@
-import tomli
+import tomllib as tomli
 import os
 
 default_config = {
