@@ -6,7 +6,6 @@ from datetime import date, datetime
 import config
 from dialogs.alert import error, alert
 from messages import DATABASE_CONFIG_ERROR, DATABASE_OFFLINE
-import oracledb
 from typing import Generator
 
 def engine_init():
