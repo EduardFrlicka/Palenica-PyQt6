@@ -700,7 +700,7 @@
             </font>
            </property>
            <property name="text">
-            <string>DPH 20%</string>
+            <string>DPH</string>
            </property>
            <property name="textFormat">
             <enum>Qt::TextFormat::PlainText</enum>

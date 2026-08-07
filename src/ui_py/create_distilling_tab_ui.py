@@ -457,7 +457,7 @@ class Ui_CreateDistillingTab(object):
         self.label_operating_costs.setText(_translate("CreateDistillingTab", "Ostatné náklady s DPH v €"))
         self.label_cost_per_liter.setText(_translate("CreateDistillingTab", "Cena za liter 50%"))
         self.label_tax_base.setText(_translate("CreateDistillingTab", "Základ dane"))
-        self.label_tax.setText(_translate("CreateDistillingTab", "DPH 20%"))
+        self.label_tax.setText(_translate("CreateDistillingTab", "DPH"))
         self.label_cost_sum.setText(_translate("CreateDistillingTab", "Spolu zaplatené pestovateľom s DPH v €"))
         self.button_Save.setText(_translate("CreateDistillingTab", "Uložiť"))
         self.button_Print.setText(_translate("CreateDistillingTab", "Tlačiť"))

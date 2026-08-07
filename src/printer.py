@@ -470,8 +470,10 @@ class OrderPrinter:
                     f"{calculations.calculate_cost_per_liter(order.cost_sum-order.operating_costs, sum_la):.2f}",
                 ],
                 ["Základ dane", f"{order.tax_base:.2f}"],
-                ["DPH 20%", f"{order.tax_vat:.2f}"],
+                [f"DPH {order.constants.vat_tax:.0f}%", f"{order.tax_vat:.2f}"],
             ]
+
+            f = 20.0
 
             cost_sum_cells = [["Spolu zaplatené pestovateľom s DPH v €", f"{order.cost_sum:.2f}"]]
 
@@ -554,11 +556,12 @@ class OrderPrinter:
         costs_rect.setLeft(costs_rect.left() + costs_rect.size().width() * 2 / 3)
         costs_rect = paint_costs(costs_rect)
 
-        notes_rect = QtCore.QRectF(layout)
-        notes_rect.setTop(distillings_rect.bottom() + VERTICAL_SPACER)
-        notes_rect.setLeft(dilute_rect.right() + HORIZONTAL_SPACER)
-        notes_rect.setRight(costs_rect.left() - HORIZONTAL_SPACER)
-        notes_rect = paint_notes(notes_rect)
+        if window.notes.toPlainText():
+            notes_rect = QtCore.QRectF(layout)
+            notes_rect.setTop(distillings_rect.bottom() + VERTICAL_SPACER)
+            notes_rect.setLeft(dilute_rect.right() + HORIZONTAL_SPACER)
+            notes_rect.setRight(costs_rect.left() - HORIZONTAL_SPACER)
+            notes_rect = paint_notes(notes_rect)
 
         painter.setFont(save_font)
 

@@ -244,6 +244,7 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
             customer,
             season,
             production_line,
+            self.calculation_constants
         )
 
         return order

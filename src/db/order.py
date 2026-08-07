@@ -2,7 +2,7 @@ from .base import Base, STRING_LEN
 from sqlalchemy import ForeignKey, Integer, String, Date, Float, Sequence
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Any, List
-from datetime import date
+from datetime import date, datetime
 import db
 
 
@@ -31,6 +31,9 @@ class Order(Base):
     production_line_id: Mapped[int] = mapped_column(ForeignKey("production_line.id"))
     production_line: Mapped["db.ProductionLine"] = relationship()
 
+    constants_timestamp: Mapped[datetime] = mapped_column(ForeignKey("constants.timestamp"))
+    constants: Mapped["db.CalculationConstants"] = relationship()
+
     def __init__(
         self,
         mark: str,
@@ -44,6 +47,7 @@ class Order(Base):
         customer: "db.Customer",
         season: "db.Season",
         production_line: "db.ProductionLine",
+        constants: "db.CalculationConstants",
     ):
         self.mark = mark
         self.service_cost = service_cost
@@ -56,3 +60,4 @@ class Order(Base):
         self.customer = customer
         self.season = season
         self.production_line = production_line
+        self.constants = constants
