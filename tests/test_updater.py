@@ -5,6 +5,7 @@ ordering, a hardcoded Windows asset name, unvalidated archive members, and no
 answer at all for a file Windows will not let you overwrite.
 """
 
+import io
 import os
 import stat
 import sys
@@ -347,6 +348,86 @@ def test_download_can_be_cancelled(tmp_path, monkeypatch):
 
     with pytest.raises(UpdateCancelled):
         install.download("https://example/asset", destination, is_cancelled=lambda: True)
+
+    assert not destination.exists()
+    assert not list(tmp_path.glob("*.part"))
+
+
+class _TrackedFile:
+    """A file that registers itself as open for as long as its handle lives."""
+
+    def __init__(self, path, mode, registry):
+        self._path = Path(path).resolve()
+        self._registry = registry
+        self._file = io.open(path, mode)
+        registry.add(self._path)
+
+    def write(self, data):
+        return self._file.write(data)
+
+    def close(self):
+        self._file.close()
+        self._registry.discard(self._path)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
+        return False
+
+
+@pytest.fixture
+def windows_file_locking(monkeypatch):
+    """Emulate the one filesystem rule Linux does not share with Windows: an
+    open file cannot be unlinked.
+
+    Cleanup code that violates it looks perfectly healthy from a Linux dev box
+    and only falls over on the one platform the app actually ships to, so the
+    rule is worth enforcing here.
+    """
+    open_paths: set[Path] = set()
+    real_unlink = Path.unlink
+
+    def guarded_unlink(self, missing_ok=False):
+        if self.resolve() in open_paths:
+            raise PermissionError(32, "The process cannot access the file because it is being used by another process")
+        return real_unlink(self, missing_ok=missing_ok)
+
+    # raising=False: install.py calls the builtin, so there is no module
+    # attribute to replace until we put one there to shadow it.
+    monkeypatch.setattr(install, "open", lambda path, mode: _TrackedFile(path, mode, open_paths), raising=False)
+    monkeypatch.setattr(Path, "unlink", guarded_unlink)
+    return open_paths
+
+
+def test_cancelling_cleans_up_even_where_open_files_cannot_be_deleted(tmp_path, monkeypatch, windows_file_locking):
+    from updater.errors import UpdateCancelled
+
+    _serve(monkeypatch, _FakeResponse([b"abc", b"def"], {"Content-Length": "6"}))
+    destination = tmp_path / "update.zip"
+
+    with pytest.raises(UpdateCancelled):
+        install.download("https://example/asset", destination, is_cancelled=lambda: True)
+
+    assert not destination.exists()
+    assert not list(tmp_path.glob("*.part"))
+
+
+def test_download_cleans_up_after_a_dropped_connection(tmp_path, monkeypatch):
+    """The partial file has to be removed once its handle is closed - Windows
+    will not unlink one that is still open."""
+
+    class _Dropping(_FakeResponse):
+        def iter_content(self, chunk_size):
+            yield b"abc"
+            raise requests.ConnectionError("connection reset by peer")
+
+    _serve(monkeypatch, _Dropping([], {"Content-Length": "6"}))
+    destination = tmp_path / "update.zip"
+
+    with pytest.raises(requests.ConnectionError):
+        install.download("https://example/asset", destination)
 
     assert not destination.exists()
     assert not list(tmp_path.glob("*.part"))

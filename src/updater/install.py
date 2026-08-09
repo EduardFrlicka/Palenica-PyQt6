@@ -77,29 +77,36 @@ def download(url, destination: Path, timeout=DEFAULT_TIMEOUT, progress=None, is_
     partial.parent.mkdir(parents=True, exist_ok=True)
     written = 0
 
-    with requests.get(url, stream=True, timeout=timeout, headers={"User-Agent": USER_AGENT}) as response:
-        response.raise_for_status()
+    try:
+        with requests.get(url, stream=True, timeout=timeout, headers={"User-Agent": USER_AGENT}) as response:
+            response.raise_for_status()
 
-        # Only trust the length when the body arrives verbatim; with a
-        # transfer encoding it describes the compressed size, not what we write.
-        expected = 0 if response.headers.get("Content-Encoding") else int(response.headers.get("Content-Length") or 0)
+            # Only trust the length when the body arrives verbatim; with a
+            # transfer encoding it describes the compressed size, not what we write.
+            expected = 0 if response.headers.get("Content-Encoding") else int(response.headers.get("Content-Length") or 0)
 
-        with open(partial, "wb") as handle:
-            for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
-                if is_cancelled is not None and is_cancelled():
-                    partial.unlink(missing_ok=True)
-                    raise UpdateCancelled()
+            with open(partial, "wb") as handle:
+                for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
+                    if is_cancelled is not None and is_cancelled():
+                        raise UpdateCancelled()
 
-                handle.write(chunk)
-                written += len(chunk)
-                if progress is not None:
-                    progress(written, expected)
+                    handle.write(chunk)
+                    written += len(chunk)
+                    if progress is not None:
+                        progress(written, expected)
 
-    if expected and written != expected:
+        if expected and written != expected:
+            raise UpdateError(messages.UPDATE_ARCHIVE_INCOMPLETE)
+
+        os.replace(partial, destination)
+    finally:
+        # A successful download has already renamed it away, so this only bites
+        # on a cancellation or a dropped connection. It has to sit out here:
+        # Windows refuses to unlink a file while its handle is still open, so
+        # cleaning up inside the write loop fails on the one platform that
+        # matters.
         partial.unlink(missing_ok=True)
-        raise UpdateError(messages.UPDATE_ARCHIVE_INCOMPLETE)
 
-    os.replace(partial, destination)
     log.info("Downloaded %s (%d bytes)", destination, written)
 
 

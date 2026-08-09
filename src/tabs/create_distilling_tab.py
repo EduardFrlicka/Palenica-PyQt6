@@ -37,6 +37,8 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
         self.button_add_distilling_input.clicked.connect(self.add_distilling_input)
         self.setWindowModality(Qt.WindowModality.WindowModal)
         self.rle_operating_costs.setDefault(0.0)
+        self.rle_operating_costs.textEdited.connect(self.update_costs)
+        self.rle_service_cost.textEdited.connect(self.update_costs)
         self.setWindowState(Qt.WindowState.WindowMaximized)
 
         for button_name, enabled in config.config.get(
