@@ -1,35 +1,133 @@
-
-name: Build Palenica for Windows
+name: Build Palenica
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
+    tags:
+      - 'v*'
+      - '[0-9]*'
   pull_request:
-    branches: [ main ]
+    branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
-  build:
-    name: Build Executables
-    runs-on: ${{ matrix.config.os }}
+  test:
+    name: Tests on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        config:
-          - os: windows-latest
+        # Windows is where the app actually runs, and where the file-locking
+        # behaviour the updater works around only exists.
+        os: [windows-latest]
+
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12.10'
+
+      # The updater tests deliberately reach no further than requests, so this
+      # stays a few seconds rather than a PyQt6 install.
+      - run: pip install pytest requests
+      - run: python -m pytest tests -q
+
+  build:
+    name: Build ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Adding ubuntu-latest or macos-latest here is all it takes to publish
+          # those builds; the updater already knows to ask for
+          # palenica-linux-<arch>.zip and palenica-macos-<arch>.zip.
+          - os: windows-latest
+            asset: palenica-windows-x86_64
+
+    steps:
+      - uses: actions/checkout@v4
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12.10'
+          cache: pip
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pyinstaller mysqlclient
-      - name: Build with pyinstaller for ${{ matrix.config.os }}
-        run: pyinstaller app.spec
-      - name: Upload Artifacts
+          pip install pyinstaller
+
+      - name: Build
+        run: pyinstaller --noconfirm app.spec
+
+      - name: Stamp the version
+        # So a fresh install already knows which release it is. Without this the
+        # updater sees no version.txt, assumes it is out of date, and downloads
+        # and reinstalls the very build it is running.
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: echo "$GITHUB_REF_NAME" > dist/main/version.txt
+
+      - name: Package
+        shell: bash
+        # shutil rather than zip or Compress-Archive: it is the one archiver
+        # guaranteed present on every runner, and it puts the contents of
+        # dist/main at the archive root, matching what the updater unpacks.
+        run: |
+          mkdir -p artifacts
+          python -c "import shutil, sys; shutil.make_archive(sys.argv[1], 'zip', 'dist/main')" "artifacts/${{ matrix.asset }}"
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.config.os }}
-          path: dist/main/
+          name: ${{ matrix.asset }}
+          path: artifacts/${{ matrix.asset }}.zip
+          if-no-files-found: error
+
+  release:
+    name: Publish release
+    # Both, so a release can never ship an updater that fails its own tests.
+    needs: [test, build]
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Collect assets
+        run: |
+          mkdir -p release
+          find artifacts -name '*.zip' -exec cp {} release/ \;
+
+          # Installs predating the updater rewrite look for exactly this name.
+          # Keep publishing it until they have all had a chance to update, or
+          # they will silently never update again.
+          if [ -f release/palenica-windows-x86_64.zip ]; then
+            cp release/palenica-windows-x86_64.zip release/windows-latest.zip
+          fi
+
+          ls -l release
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" release/* --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" release/* \
+              --title "$GITHUB_REF_NAME" \
+              --generate-notes
+          fi

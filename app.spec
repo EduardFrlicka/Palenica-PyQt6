@@ -1,13 +1,21 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+import os
+
 block_cipher = None
 
+# Both entry points live in src/ and import their neighbours flatly
+# (import config, import db), so src/ has to be on the analysis path.
+SRC = 'src'
+
 app = Analysis(
-    ['src\\app.py', '.\\app.spec'],
-    pathex=[],
+    [os.path.join(SRC, 'app.py')],
+    pathex=[SRC],
     binaries=[],
     datas=[],
-    hiddenimports=["cryptography.hazmat.primitives.kdf.pbkdf2"],
+    # db.turso_dialect is only ever reached through SQLAlchemy's string-keyed
+    # dialect registry, so PyInstaller cannot see it by following imports.
+    hiddenimports=["libsql", "db.turso_dialect"],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -19,8 +27,8 @@ app = Analysis(
 )
 
 updater = Analysis(
-    ['src/updater_app.py'],
-    pathex=[],
+    [os.path.join(SRC, 'updater_app.py')],
+    pathex=[SRC],
     binaries=[],
     datas=[],
     hiddenimports=[],
@@ -44,7 +52,7 @@ app_exe = EXE(
     [],
     exclude_binaries=True,
     name='Palenica',
-    debug=True,
+    debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
@@ -63,7 +71,7 @@ updater_exe = EXE(
     [],
     exclude_binaries=True,
     name='updater',
-    debug=True,
+    debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,

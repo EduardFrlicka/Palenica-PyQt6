@@ -4,6 +4,7 @@ from sqlalchemy import create_engine, text, URL
 from sqlalchemy.orm import Session
 from datetime import date, datetime
 import config
+from . import turso_dialect  # registers the sqlite+turso:// URL scheme
 from dialogs.alert import error, alert
 from messages import DATABASE_CONFIG_ERROR, DATABASE_OFFLINE
 from typing import Generator
@@ -14,33 +15,22 @@ def engine_init():
         error(DATABASE_CONFIG_ERROR)
         return None
 
+    url = database_config.get("url")
+    if not url:
+        error(DATABASE_CONFIG_ERROR)
+        return None
+
     try:
-        url = database_config.get("url")
+        # Turso: sqlite+turso://<host>.turso.io/?authToken=<token>
+        print("Connecting to database...")
 
-        if url:
-            # SQLite Cloud: sqlitecloud://<host>:8860/<database>?apikey=<key>
-            print("Connecting to database...")
+        engine = create_engine(
+            url,
+            pool_pre_ping=True,  # hosted databases drop idle connections
+        )
 
-            engine = create_engine(
-                url,
-                pool_pre_ping=True,  # hosted databases drop idle connections
-            )
-
-            with engine.connect() as connection:
-                connection.execute(text("select 1"))
-        else:
-            print("Connecting to Oracle database...")
-
-            connection = oracledb.connect(
-                user=database_config.get("user"),
-                password=database_config.get("password"),
-                dsn=database_config.get("dsn"),
-            )
-
-            engine = create_engine(
-                "oracle+oracledb://",
-                creator=lambda: connection,
-            )
+        with engine.connect() as connection:
+            connection.execute(text("select 1"))
 
         print("Connected to database successfully.")
 

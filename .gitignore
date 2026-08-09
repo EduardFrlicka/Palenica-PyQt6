@@ -3,3 +3,15 @@ __pycache__/
 *.pyc
 palenica.db
 *.zip
+
+# Updater state: the version marker belongs to an installation, and the working
+# directory holds the downloaded archive and the extraction staging area.
+version.txt
+palenica-update.log
+.palenica-update/
+
+# PyInstaller
+build/
+dist/
+
+.pytest_cache/

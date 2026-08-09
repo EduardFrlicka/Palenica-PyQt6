@@ -102,9 +102,7 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
 
     @staticmethod
     def round_to_5_cent(value: float) -> float:
-        ROUND_PRECISION = 0.05
-        result = round(value / ROUND_PRECISION, 0) * ROUND_PRECISION
-        return result if result else 0.05
+        return calculations.round_to_5_cent(value)
 
     def update_costs(self):
         distilling_inputs = self.findChildren(DistillingInput)
@@ -122,7 +120,6 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
             self.rle_operating_costs.value if self.rle_operating_costs.value else 0.0
         )
 
-        # TODO round
         self.cost_sum = self.round_to_5_cent(
             self.service_cost + self.operating_costs + sum_taxes
         )

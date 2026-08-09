@@ -1,5 +1,4 @@
-sqlitecloud==0.0.84
-sqlalchemy-sqlitecloud==0.1.2
+libsql==0.1.11
 PyQt6==6.9.1
 PyQt6_sip==13.8.0
 Requests==2.32.5

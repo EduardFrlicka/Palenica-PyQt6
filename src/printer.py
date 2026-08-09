@@ -263,7 +263,8 @@ class OrderPrinter:
             confirmation = "Svojím podpisom potvrdzujem prevzatie a zaplatenie nezávadného destilátu."
             sign_customer = "_____________________________\nPodpis pestovateľa"
             sign_employee = "_____________________________\nPodpis prevádzkovateľa"
-            cost_words = f"Spolu zaplatené slovom: {number_by_word(int(price_sum))} eur a {int(price_sum*100%100)} centov"
+            price_euros, price_cents = calculations.split_euro_cents(price_sum)
+            cost_words = f"Spolu zaplatené slovom: {number_by_word(price_euros)} eur a {price_cents} centov"
             production_date = f"Dátum výroby destilátu: {order.production_date.strftime(constants.DATE_FORMAT)}"
             pickup_date = "Dátum prevzatia destilátu: ______________________"
 
@@ -425,11 +426,11 @@ class OrderPrinter:
                     f"{distilling.alcohol_volume:.2f}",
                     f"{distilling.alcohol_percentage:.2f}",
                     f"{distilling.alcohol_temperature:.2f}",
-                    f"{distilling.alcohol_percentage_at_20:.2f}",
+                    f"{distilling.alcohol_percentage_at_20 * 100:.2f}",
                     f"{distilling.alcohol_volume_la:.2f}",
-                    f"{distilling.lower_tax:.3f}",
-                    f"{distilling.full_tax:.3f}",
-                    f"{distilling.sum_tax:.3f}",
+                    f"{distilling.lower_tax:.2f}",
+                    f"{distilling.full_tax:.2f}",
+                    f"{distilling.sum_tax:.2f}",
                 ]
                 for distilling in order.distillings
             ]
@@ -455,6 +456,7 @@ class OrderPrinter:
 
         def paint_costs(rect: QtCore.QRectF):
             sum_la = sum([distilling.alcohol_volume_la for distilling in order.distillings])
+            sum_taxes = sum([distilling.sum_tax for distilling in order.distillings])
 
             costs_cells = [
                 [
@@ -467,10 +469,10 @@ class OrderPrinter:
                 ],
                 [
                     "Cena za liter 50%",
-                    f"{calculations.calculate_cost_per_liter(order.cost_sum-order.operating_costs, sum_la):.2f}",
+                    f"{calculations.calculate_cost_per_liter(sum_taxes + order.service_cost, sum_la):.2f}",
                 ],
                 ["Základ dane", f"{order.tax_base:.2f}"],
-                [f"DPH {order.constants.vat_tax:.0f}%", f"{order.tax_vat:.2f}"],
+                [f"DPH {order.constants.vat_tax * 100:.0f}%", f"{order.tax_vat:.2f}"],
             ]
 
             f = 20.0
