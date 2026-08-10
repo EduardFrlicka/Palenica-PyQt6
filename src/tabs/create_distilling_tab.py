@@ -63,12 +63,15 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
             customer_la = self.customer_handler.la
 
         distilling_inputs = self.findChildren(DistillingInput)
-        for distilling_input in distilling_inputs:
-            if distilling_input.customer_la != customer_la:
-                distilling_input.customer_la = customer_la
+        volumes = [distilling_input.alcohol_volume_la for distilling_input in distilling_inputs]
+        la_before = calculations.running_la_before(customer_la, volumes)
+
+        for distilling_input, before in zip(distilling_inputs, la_before):
+            if distilling_input.customer_la != before:
+                distilling_input.customer_la = before
                 distilling_input.update_tax()
-            customer_la += distilling_input.alcohol_volume_la
-        self.customer_handler.le_la_after.setText(f"{customer_la:.2f}")
+
+        self.customer_handler.le_la_after.setText(f"{customer_la + sum(volumes):.2f}")
 
     def update_dilute_table(self):
         # self.diluteTable.setColumnCount(len(calculations.DILUTE_TARGETS))
@@ -102,10 +105,6 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
         self.dateEdit.setDate(date.today())
         self.production_date = date.today()
 
-    @staticmethod
-    def round_to_5_cent(value: float) -> float:
-        return calculations.round_to_5_cent(value)
-
     def update_costs(self):
         distilling_inputs = self.findChildren(DistillingInput)
         sum_taxes = 0
@@ -115,32 +114,36 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
             sum_taxes += distilling_input.sum_tax
             sum_la += distilling_input.alcohol_volume_la
 
-        self.rle_service_cost.setDefault(max(0, sum_la * self.calculation_constants.service_cost * 2.0 - sum_taxes))
+        self.rle_service_cost.setDefault(
+            calculations.default_service_cost(
+                sum_la, self.calculation_constants.service_cost, sum_taxes
+            )
+        )
         self.service_cost = self.rle_service_cost.value
 
         self.operating_costs = (
             self.rle_operating_costs.value if self.rle_operating_costs.value else 0.0
         )
 
-        self.cost_sum = self.round_to_5_cent(
-            self.service_cost + self.operating_costs + sum_taxes
+        costs = calculations.order_costs(
+            self.service_cost,
+            self.operating_costs,
+            sum_taxes,
+            sum_la,
+            self.calculation_constants.vat_tax,
         )
+
+        self.cost_sum = costs.cost_sum
         self.le_cost_sum.setText(f"{self.cost_sum:.2f}")
 
-        self.tax_base = round(
-            (self.service_cost + self.operating_costs) / (1 + self.calculation_constants.vat_tax), 2
-        )
+        self.tax_base = costs.tax_base
         self.le_tax_base.setText(f"{self.tax_base:.2f}")
 
-        self.tax_vat = round(
-            (self.service_cost + self.operating_costs) - self.tax_base, 2
-        )
+        self.tax_vat = costs.tax_vat
         self.le_tax_vat.setText(f"{self.tax_vat:0.2f}")
 
         if sum_la:
-            self.cost_per_liter = calculations.calculate_cost_per_liter(
-                sum_taxes + self.service_cost, sum_la
-            )
+            self.cost_per_liter = costs.cost_per_liter
             self.le_cost_per_liter.setText(f"{self.cost_per_liter:.2f}")
 
     def print_save(self):
