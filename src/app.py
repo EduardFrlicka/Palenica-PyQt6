@@ -5,7 +5,7 @@ from ui_py.main_window_ui import Ui_MainWindow
 import updater
 import db
 import messages
-from dialogs.alert import error
+from dialogs.alert import error, alert
 from dialogs.splash import StartupSplash
 from config import config
 
@@ -54,9 +54,18 @@ def main() -> int:
         return 0
 
     # Connect up front so the wait on the hosted database gets its own message
-    # instead of hiding inside the first tab that queries it.
+    # instead of hiding inside the first tab that queries it. The db layer only
+    # reports what went wrong; deciding how to present it - and whether it is
+    # fatal - is this layer's call.
     splash.message(messages.STARTUP_CONNECTING_DATABASE)
-    db.get_engine()
+    if db.get_engine() is None:
+        db_error = db.get_engine_error()
+        if isinstance(db_error, db.DatabaseConfigError):
+            # Without a usable config there is nothing to run: error() exits.
+            error(db_error.user_message)
+        else:
+            # Offline is recoverable - warn once and carry on in manual mode.
+            alert(db_error.user_message)
 
     main_window = MainWindow(progress=splash.message)
     splash.message(messages.STARTUP_DONE)

@@ -5,20 +5,24 @@ from sqlalchemy.orm import Session
 from datetime import date, datetime
 import config
 from . import turso_dialect  # registers the sqlite+turso:// URL scheme
-from dialogs.alert import error, alert
+from .errors import DatabaseUnavailable, DatabaseConfigError, DatabaseOffline
 from messages import DATABASE_CONFIG_ERROR, DATABASE_OFFLINE
 from typing import Generator
 
+
 def engine_init():
+    """Create the SQLAlchemy engine, or raise a DatabaseUnavailable.
+
+    Raising rather than reporting keeps this free of the GUI: the caller decides
+    how to present the failure and whether it is fatal (see app.main).
+    """
     database_config: dict = config.config.get("database")
     if not database_config:
-        error(DATABASE_CONFIG_ERROR)
-        return None
+        raise DatabaseConfigError(DATABASE_CONFIG_ERROR)
 
     url = database_config.get("url")
     if not url:
-        error(DATABASE_CONFIG_ERROR)
-        return None
+        raise DatabaseConfigError(DATABASE_CONFIG_ERROR)
 
     try:
         # Turso: sqlite+turso://<host>.turso.io/?authToken=<token>
@@ -33,40 +37,42 @@ def engine_init():
             connection.execute(text("select 1"))
 
         print("Connected to database successfully.")
-
-        # db.Base.metadata.drop_all(engine)
-        # db.Base.metadata.create_all(engine)
-
-        # with Session(engine) as session:
-        #     season = session.query(db.Season).first()  # Test connection and metadata
-            # if not season:
-            #     session.add(db.Season(date_start=date.today(), date_end=date.today()))
-
-            # session.add(db.ProductionLine("A"))
-            # session.add(db.ProductionLine("B"))
-            # session.commit()
-        print("Database engine initialized successfully.")
-
-    except Exception as e:
-        # traceback.print_exc()
+    except Exception as exc:
         traceback.print_stack()
-        print(e)
-        alert(DATABASE_OFFLINE)
-        return None
+        print(exc)
+        raise DatabaseOffline(DATABASE_OFFLINE) from exc
 
+    print("Database engine initialized successfully.")
     return engine
+
 
 engine = None
-# engine = engine_init()
+_init_attempted = False
+_init_error: DatabaseUnavailable | None = None
+
 
 def get_engine():
+    """Return the database engine, or None if it is unavailable.
+
+    The connection is attempted once and the failure is remembered, so the
+    repeated ``get_engine() is None`` checks callers use to fall back to
+    manual/offline mode neither reconnect nor re-report. Inspect the cached
+    failure with get_engine_error().
     """
-    Returns the database engine.
-    """
-    global engine
-    if engine is None:
-        engine = engine_init()
+    global engine, _init_attempted, _init_error
+    if engine is None and not _init_attempted:
+        _init_attempted = True
+        try:
+            engine = engine_init()
+        except DatabaseUnavailable as exc:
+            _init_error = exc
     return engine
+
+
+def get_engine_error() -> "DatabaseUnavailable | None":
+    """The failure from the connection attempt, or None if it never failed."""
+    return _init_error
+
 
 def get_session() -> Session:
     """
@@ -76,6 +82,7 @@ def get_session() -> Session:
         raise Exception("Database engine is not initialized.")
 
     return Session(engine)
+
 
 def get_session_generator() -> Generator[Session, None, None]:
     """
@@ -88,4 +95,4 @@ def get_session_generator() -> Generator[Session, None, None]:
     try:
         yield session
     finally:
-        session.close()    
+        session.close()
