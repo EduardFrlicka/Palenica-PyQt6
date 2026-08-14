@@ -1,7 +1,6 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLineEdit
 from PyQt6.QtCore import pyqtSignal
 from ui_py.distilling_input_ui import Ui_distilling_input
-from temperature_table import TEMPERATURE_TABLE
 import calculations
 import db
 from dialogs.alert import alert
@@ -41,37 +40,29 @@ class DistillingInput(Ui_distilling_input, QWidget):
     def update_tax(self):
         if self.customer_la is None:
             return
+
+        breakdown = calculations.excise_tax(
+            self.customer_la,
+            self.alcohol_volume_la,
+            self.calculation_constants.lower_tax,
+            self.calculation_constants.full_tax,
+            self.calculation_constants.lower_tax_la_limit,
+        )
+
         tax_updated = False
 
-        if self.customer_la > self.calculation_constants.lower_tax_la_limit:
-            new_lower_tax = 0.0
-            new_full_tax = self.alcohol_volume_la * self.calculation_constants.full_tax
-        elif self.customer_la + self.alcohol_volume_la <= self.calculation_constants.lower_tax_la_limit:
-            new_full_tax = 0.0
-            new_lower_tax = self.alcohol_volume_la * self.calculation_constants.lower_tax
-        else:
-            new_lower_tax = (self.calculation_constants.lower_tax_la_limit - self.customer_la) * self.calculation_constants.lower_tax
-            new_full_tax = (
-                self.customer_la + self.alcohol_volume_la - self.calculation_constants.lower_tax_la_limit
-            ) * self.calculation_constants.full_tax
-
-        # Excise duty is money: quantize to cents before it is stored or summed,
-        # so the printed lines add up to the printed total.
-        new_lower_tax = calculations.round_money(new_lower_tax)
-        new_full_tax = calculations.round_money(new_full_tax)
-
-        if self.lower_tax != new_lower_tax:
+        if self.lower_tax != breakdown.lower:
             tax_updated = True
-            self.lower_tax = new_lower_tax
+            self.lower_tax = breakdown.lower
             self.write_tax_edit(self.edit_lower_tax, self.lower_tax)
 
-        if self.full_tax != new_full_tax:
+        if self.full_tax != breakdown.full:
             tax_updated = True
-            self.full_tax = new_full_tax
+            self.full_tax = breakdown.full
             self.write_tax_edit(self.edit_full_tax, self.full_tax)
 
         if tax_updated:
-            self.sum_tax = calculations.round_money(self.full_tax + self.lower_tax)
+            self.sum_tax = breakdown.total
             self.write_tax_edit(self.edit_sum_tax, self.sum_tax)
             self.tax_edited.emit()
 
@@ -79,13 +70,15 @@ class DistillingInput(Ui_distilling_input, QWidget):
         if not self.collect_all():
             return
 
-        self.alcohol_percentage_at_20 = self.normalize_percentage()
+        self.alcohol_percentage_at_20 = calculations.percentage_at_20(
+            self.alcohol_percentage, self.alcohol_temperature
+        )
         self.write_edit(
             self.edit_alcohol_percentage_at_20, self.alcohol_percentage_at_20 * 100
         )
 
-        new_alcohol_volume_la = round(
-            self.alcohol_percentage_at_20 * self.alcohol_volume, 2
+        new_alcohol_volume_la = calculations.litres_absolute(
+            self.alcohol_percentage_at_20, self.alcohol_volume
         )
 
         if new_alcohol_volume_la != self.alcohol_volume_la:
@@ -103,25 +96,6 @@ class DistillingInput(Ui_distilling_input, QWidget):
     def write_tax_edit(edit: QLineEdit, value):
         if isinstance(value, (float, int)):
             edit.setText(f"{value:0.2f}")
-
-    def normalize_percentage(self):
-        # TEMPERATURE_TABLE is tabulated at 0.1 % and 1 ˚C granularity. Pick the
-        # nearest row/column instead of flooring, which biased every reading
-        # towards an overstated strength.
-        percentage = calculations.round_half_up_int(self.alcohol_percentage * 10)
-        temperature = calculations.round_half_up_int(self.alcohol_temperature)
-        if percentage < 0 or percentage >= len(TEMPERATURE_TABLE) or temperature < 0:
-            return 0.0
-
-        # Bounds come from the row itself: row 999 is one entry short, so a
-        # hard-coded limit of 30 would index past the end of it.
-        row = TEMPERATURE_TABLE[percentage]
-        if temperature >= len(row):
-            return 0.0
-
-        result = row[temperature]
-
-        return 0 if result == -1 else result / 100
 
     def get_object(self):
         if self.ferment_volume is None:
