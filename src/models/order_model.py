@@ -7,8 +7,6 @@ from PyQt6.QtCore import (
     QSortFilterProxyModel,
 )
 from datetime import date
-from sqlalchemy.sql import func
-from sqlalchemy.orm import Session
 import db
 
 
@@ -95,32 +93,7 @@ class OrderSortFilterModel(QSortFilterProxyModel):
 class OrderModelView(QAbstractTableModel):
     def __init__(self, parent: QObject | None = ...) -> None:
         super().__init__(parent)
-        with db.get_session() as session:
-            self._data = [
-                (
-                    row[0].id,
-                    row[2].id,
-                    row[0].mark,
-                    row[3].name,
-                    row[0].production_date,
-                    row[1].name,
-                    row[1].address,
-                    row[1].birthday,
-                    row[4],
-                )
-                for row in session.query(
-                    db.Order,
-                    db.Customer,
-                    db.Season,
-                    db.ProductionLine,
-                    func.sum(db.Distilling.alcohol_volume_la),
-                )
-                .outerjoin(db.Customer)
-                .outerjoin(db.Season)
-                .outerjoin(db.ProductionLine)
-                .outerjoin(db.Distilling)
-                .group_by(db.Order, db.Customer, db.Season, db.ProductionLine)
-            ]
+        self._data = db.get_orders_overview()
 
         self._headers = [
             "id",
