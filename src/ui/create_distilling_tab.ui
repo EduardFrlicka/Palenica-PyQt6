@@ -830,6 +830,13 @@
         </spacer>
        </item>
        <item>
+        <widget class="QPushButton" name="button_Delete">
+         <property name="text">
+          <string>Zmazať</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="button_Save">
          <property name="text">
           <string>Uložiť</string>
@@ -886,6 +893,22 @@
   <include location="../../resources/resources.qrc"/>
  </resources>
  <connections>
+  <connection>
+   <sender>button_Delete</sender>
+   <signal>clicked()</signal>
+   <receiver>CreateDistillingTab</receiver>
+   <slot>delete()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>951</x>
+     <y>509</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1114</x>
+     <y>529</y>
+    </hint>
+   </hints>
+  </connection>
   <connection>
    <sender>button_SavePrint</sender>
    <signal>clicked()</signal>
@@ -956,5 +979,6 @@
   <slot>save()</slot>
   <slot>print_save()</slot>
   <slot>date_edit()</slot>
+  <slot>delete()</slot>
  </slots>
 </ui>

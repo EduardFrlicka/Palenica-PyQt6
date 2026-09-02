@@ -23,6 +23,18 @@ class ResetableLineEdit(Ui_ResetableLineEdit, QWidget):
         else:
             self.default_value = value
 
+    def setValue(self, value):
+        """Show `value` as an entry the user made, not as the computed default.
+
+        Loading a stored order goes through here: its service and operating
+        costs were typed by the operator, so they must survive the recalculation
+        that follows, and keep the reset button that puts the default back.
+        """
+        self._setEdit(value)
+        self.value = value
+        self.is_default = False
+        self.reset_button.show()
+
     def _setEdit(self, value):
         if value is None:
             self.lineEdit.setText("")

@@ -22,11 +22,17 @@ class CustomerHandler(QWidget, Ui_CustomerHandler):
         customer_select = CustomerSelectDialog()
         if customer_select.exec():
             self.load_customer(customer_select.customer)
-            self.setReadOnly(True)
-            self.la_preview.show()
-            self.customerPreview.show()
-            self.select_buttons.hide()
+            self.show_customer()
         print("customer", self.customer)
+
+    def show_customer(self):
+        """Switch from the "pick a customer" buttons to the read-only preview."""
+        self.setReadOnly(True)
+        self.la_preview.show()
+        self.customerPreview.show()
+        self.select_buttons.hide()
+        self.label_manual_customer.hide()
+        self.is_manual = False
 
     def change_customer(self):
         self.is_manual = False
@@ -68,10 +74,19 @@ class CustomerHandler(QWidget, Ui_CustomerHandler):
         self.le_name.textEdited.connect(func)
         self.le_la_before.textEdited.connect(func)
 
-    def load_customer(self, customer: db.Customer):
+    def load_customer(self, customer: db.Customer, la: float = None):
+        """Show `customer` and the litres they have already used up this season.
+
+        `la` overrides that figure. Editing an existing order passes the litres
+        accumulated *before* it, which is not the customer's season total - the
+        order's own litres must not count towards its own excise limit.
+        """
         self.customer = customer
-        with db.get_session() as session:
-            self.la = db.get_customer_la(customer, session)
+        if la is None:
+            with db.get_session() as session:
+                self.la = db.get_customer_la(customer, session)
+        else:
+            self.la = la
 
         self.le_address.setText(self.customer.address)
         self.le_birthday.setText(self.customer.birthday.strftime(DATE_FORMAT))

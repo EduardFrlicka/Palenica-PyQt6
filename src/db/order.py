@@ -20,7 +20,13 @@ class Order(Base):
     cost_sum: Mapped[float] = mapped_column(Float)
     operating_costs: Mapped[float] = mapped_column(Float)
 
-    distillings: Mapped[List["db.Distilling"]] = relationship()
+    # delete-orphan: a distilling only exists as part of its order, so dropping
+    # the order - or replacing its lines while editing - must take the rows with
+    # it. Without the cascade the leftovers keep a foreign key to an order id
+    # that is gone.
+    distillings: Mapped[List["db.Distilling"]] = relationship(
+        cascade="all, delete-orphan"
+    )
 
     customer_id: Mapped[int] = mapped_column(ForeignKey("customer.id"))
     customer: Mapped["db.Customer"] = relationship()

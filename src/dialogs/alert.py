@@ -41,3 +41,17 @@ def warning(text: str):
     msgBox.buttonClicked.connect(msgBox.clickedButton)
 
     msgBox.exec()
+
+
+def confirm(text: str, title: str = "Potvrdenie") -> bool:
+    """Ask a yes/no question. Defaults to No, so Enter never destroys anything."""
+    msgBox = QMessageBox()
+    msgBox.setIcon(QMessageBox.Icon.Question)
+    msgBox.setText(text)
+    msgBox.setWindowTitle(title)
+    msgBox.setStandardButtons(
+        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+    )
+    msgBox.setDefaultButton(QMessageBox.StandardButton.No)
+
+    return msgBox.exec() == QMessageBox.StandardButton.Yes

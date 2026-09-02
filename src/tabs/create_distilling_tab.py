@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import (
     QTabBar,
     QPushButton,
 )
-from PyQt6.QtCore import QVariant, Qt
+from PyQt6.QtCore import QDate, QVariant, Qt, pyqtSignal
 from ui_py.create_distilling_tab_ui import Ui_CreateDistillingTab
 import resources
 from widgets.distilling_input import DistillingInput
@@ -18,21 +18,34 @@ import config
 import db
 import messages
 from dialogs.alert import alert
+import dialogs.order_edit as order_edit
 import calculations
 
 
 class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
-    def __init__(self):
+    """The distilling form, in one of two modes.
+
+    With no `order_id` it is the "Nová destilácia" tab and saving inserts a new
+    order. With one it is an editor for that order, opened from the distillings
+    tab: the same widgets, the same calculation chain, but saving updates the
+    stored order and a Zmazať button removes it. `order_closed` tells whoever
+    opened the editor that it is finished.
+    """
+
+    order_closed = pyqtSignal()
+
+    def __init__(self, order_id: int = None):
         super().__init__()
         self.setupUi(self)
+        self.order_id = order_id
         self.label_year.setText(f"/{date.today().year}")
         self.date_reset()
         self.calculation_constants = db.CalculationConstants.get()
         self.cb_production_line.clear()
         self.cb_production_line.addItems([line.name for line in db.get_production_lines()])
-        self.add_distilling_input()
-        self.label_lower_tax.setText(f"Suma spotrebnej dane {self.calculation_constants.lower_tax:.3f} €/la")
-        self.label_full_tax.setText(f"Suma spotrebnej dane {self.calculation_constants.full_tax:.3f} €/la")
+        if self.order_id is None:
+            self.add_distilling_input()
+        self.show_tax_rates()
         self.reset_button_date.clicked.connect(self.date_reset)
         self.button_add_distilling_input.clicked.connect(self.add_distilling_input)
         self.setWindowModality(Qt.WindowModality.WindowModal)
@@ -49,6 +62,61 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
             if not enabled:
                 button.hide()
 
+        # Deleting is only meaningful for an order that already exists.
+        self.button_Delete.setVisible(self.order_id is not None)
+
+        if self.order_id is not None:
+            self.load_order()
+
+    def show_tax_rates(self):
+        self.label_lower_tax.setText(f"Suma spotrebnej dane {self.calculation_constants.lower_tax:.3f} €/la")
+        self.label_full_tax.setText(f"Suma spotrebnej dane {self.calculation_constants.full_tax:.3f} €/la")
+
+    def load_order(self):
+        """Fill the form from the stored order so it can be edited in place."""
+        with db.get_session() as session:
+            order = db.get_order(self.order_id, session)
+            if order is None:
+                alert(messages.ORDER_NOT_FOUND)
+                return
+
+            # An order keeps the rates it was priced with. Recalculating it
+            # against today's constants would silently reprice a doklad that has
+            # already been printed and paid.
+            self.calculation_constants = order.constants
+            session.expunge(self.calculation_constants)
+            self.show_tax_rates()
+
+            self.le_mark.setText(order.mark)
+            self.label_year.setText(f"/{order.production_date.year}")
+            self.dateEdit.setDate(QDate(order.production_date))
+            self.production_date = order.production_date
+
+            line_index = self.cb_production_line.findText(order.production_line.name)
+            if line_index != -1:
+                self.cb_production_line.setCurrentIndex(line_index)
+
+            # Not the customer's season total: the litres of this very order must
+            # not count towards its own excise limit, or every re-save would push
+            # it a tier higher.
+            la_before = db.get_customer_la_before(
+                order.customer, order, order.season, session
+            )
+            customer = order.customer
+            session.expunge(customer)
+            self.customer_handler.load_customer(customer, la=la_before)
+            self.customer_handler.show_customer()
+            # Reassigning a booked doklad to somebody else is not an edit - it is
+            # a different order - so the customer is fixed once it exists.
+            self.customer_handler.pushButton.hide()
+
+            for distilling in order.distillings:
+                self.add_distilling_input().load_distilling(distilling)
+
+            self.rle_service_cost.setValue(order.service_cost)
+            self.rle_operating_costs.setValue(order.operating_costs)
+            self.update_costs()
+
     def add_distilling_input(self):
         new_distilling_input = DistillingInput(parent=self, calculation_constants=self.calculation_constants)
         new_distilling_input.setObjectName("distilling_input")
@@ -56,6 +124,7 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
         new_distilling_input.la_edited.connect(self.distribute_la)
         new_distilling_input.la_edited.connect(self.update_dilute_table)
         self.layout_distilling_inputs.addWidget(new_distilling_input)
+        return new_distilling_input
 
     def distribute_la(self):
         customer_la = 0
@@ -151,6 +220,7 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
 
             self.save_order(order, session)
             self.print_order(order)
+        self.finish()
 
     def print(self):
         with db.get_session() as session:
@@ -167,16 +237,45 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
                 return
 
             self.save_order(order, session)
+        self.finish()
+
+    def delete(self):
+        if self.order_id is None:
+            return
+
+        if order_edit.delete_order(self.order_id):
+            self.order_closed.emit()
+
+    def finish(self):
+        """Close the editor once its order has been written."""
+        if self.order_id is not None:
+            self.order_closed.emit()
 
     def create_order(self, session: Session = None) -> db.Order:
         distilling_inputs = self.findChildren(DistillingInput)
-        if not self.customer_handler.is_manual:
+
+        stored_order = None
+        if self.order_id is not None:
+            if self.customer_handler.is_manual:
+                alert(messages.MANUAL_CUSTOMER_NOT_EDITABLE)
+                return None
+
+            stored_order = db.get_order(self.order_id, session)
+            if stored_order is None:
+                alert(messages.ORDER_NOT_FOUND)
+                return None
+
+        if self.customer_handler.is_manual:
+            season = None
+        elif stored_order is not None:
+            # An existing order stays in the season it was booked in, even once
+            # that season is no longer the active one.
+            season = stored_order.season
+        else:
             season = db.get_active_season(session=session)
             if season is None:
                 alert(messages.ACTIVE_SEASON_NOT_FOUND)
                 return None
-        else:
-            season = None
 
         if not self.customer_handler.is_manual:
             customer = db.get_customer(self.customer_handler.customer, session)
@@ -195,10 +294,17 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
             return None
 
         if not self.customer_handler.is_manual:
-            la = db.get_customer_la(customer, session)
+            # Guard against a second till having booked litres for this customer
+            # since the form was filled in - the tier the duty was computed at
+            # would no longer be the right one.
+            if stored_order is None:
+                la = db.get_customer_la(customer, session)
+            else:
+                la = db.get_customer_la_before(customer, stored_order, season, session)
+
             if la != self.customer_handler.la:
                 alert(messages.LA_NOT_MATCH.format(la, self.customer_handler.la))
-                self.customer_handler.load_customer(customer)
+                self.customer_handler.load_customer(customer, la=la)
                 return None
 
         if not self.customer_handler.is_manual:
@@ -231,20 +337,35 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
         #           marked.production_date.strftime(DATE_FORMAT)))
         #     return None
 
-        order = db.Order(
-            self.le_mark.text(),
-            self.production_date,
-            self.service_cost,
-            self.tax_vat,
-            self.tax_base,
-            self.cost_sum,
-            self.operating_costs,
-            distillings,
-            customer,
-            season,
-            production_line,
-            self.calculation_constants
-        )
+        if self.order_id is None:
+            return db.Order(
+                self.le_mark.text(),
+                self.production_date,
+                self.service_cost,
+                self.tax_vat,
+                self.tax_base,
+                self.cost_sum,
+                self.operating_costs,
+                distillings,
+                customer,
+                season,
+                production_line,
+                self.calculation_constants
+            )
+
+        order = stored_order
+        order.mark = self.le_mark.text()
+        order.production_date = self.production_date
+        order.service_cost = self.service_cost
+        order.tax_vat = self.tax_vat
+        order.tax_base = self.tax_base
+        order.cost_sum = self.cost_sum
+        order.operating_costs = self.operating_costs
+        order.production_line = production_line
+        # The old lines are dropped by the delete-orphan cascade. Season, customer
+        # and constants are deliberately left alone: an existing order keeps the
+        # period it was booked in and the rates it was priced with.
+        order.distillings = distillings
 
         return order
 
@@ -252,12 +373,17 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
         if self.customer_handler.is_manual:
             return
 
-        for distilling in order.distillings:
-            session.add(distilling)
         session.add(order)
         session.commit()
 
         print("order saved")
+
+        if self.order_id is not None:
+            later_orders = db.get_orders_after(order, session)
+            la_before = db.get_customer_la_before(
+                order.customer, order, order.season, session
+            ) + sum(distilling.alcohol_volume_la for distilling in order.distillings)
+            order_edit.warn_about_later_orders(later_orders, la_before)
 
     def print_order(self, order: db.Order):
         from printer import OrderPrinter

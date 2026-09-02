@@ -35,43 +35,39 @@ class DistillingInput(Ui_distilling_input, QWidget):
             QVBoxLayout, name="layout_distilling_inputs"
         )
         layout_distilling_inputs.removeWidget(self)
+        # Dropping it from the layout is not enough: the tab collects its rows
+        # with findChildren, so a widget that stays parented would still be
+        # asked for a Distilling on save and refuse with a zero-volume alert.
+        self.setParent(None)
         self.alcohol_volume_la = 0
         self.la_edited.emit()
+        self.deleteLater()
 
     def update_tax(self):
         if self.customer_la is None:
             return
         tax_updated = False
 
-        if self.customer_la > self.calculation_constants.lower_tax_la_limit:
-            new_lower_tax = 0.0
-            new_full_tax = self.alcohol_volume_la * self.calculation_constants.full_tax
-        elif self.customer_la + self.alcohol_volume_la <= self.calculation_constants.lower_tax_la_limit:
-            new_full_tax = 0.0
-            new_lower_tax = self.alcohol_volume_la * self.calculation_constants.lower_tax
-        else:
-            new_lower_tax = (self.calculation_constants.lower_tax_la_limit - self.customer_la) * self.calculation_constants.lower_tax
-            new_full_tax = (
-                self.customer_la + self.alcohol_volume_la - self.calculation_constants.lower_tax_la_limit
-            ) * self.calculation_constants.full_tax
+        tax = calculations.excise_tax(
+            self.customer_la,
+            self.alcohol_volume_la,
+            self.calculation_constants.lower_tax,
+            self.calculation_constants.full_tax,
+            self.calculation_constants.lower_tax_la_limit,
+        )
 
-        # Excise duty is money: quantize to cents before it is stored or summed,
-        # so the printed lines add up to the printed total.
-        new_lower_tax = calculations.round_money(new_lower_tax)
-        new_full_tax = calculations.round_money(new_full_tax)
-
-        if self.lower_tax != new_lower_tax:
+        if self.lower_tax != tax.lower:
             tax_updated = True
-            self.lower_tax = new_lower_tax
+            self.lower_tax = tax.lower
             self.write_tax_edit(self.edit_lower_tax, self.lower_tax)
 
-        if self.full_tax != new_full_tax:
+        if self.full_tax != tax.full:
             tax_updated = True
-            self.full_tax = new_full_tax
+            self.full_tax = tax.full
             self.write_tax_edit(self.edit_full_tax, self.full_tax)
 
         if tax_updated:
-            self.sum_tax = calculations.round_money(self.full_tax + self.lower_tax)
+            self.sum_tax = tax.total
             self.write_tax_edit(self.edit_sum_tax, self.sum_tax)
             self.tax_edited.emit()
 
@@ -103,6 +99,20 @@ class DistillingInput(Ui_distilling_input, QWidget):
     def write_tax_edit(edit: QLineEdit, value):
         if isinstance(value, (float, int)):
             edit.setText(f"{value:0.2f}")
+
+    def load_distilling(self, distilling: db.Distilling):
+        """Fill the row from a stored distilling and recompute from its inputs.
+
+        Only the five measured values are written back; percentage at 20 ˚C, LA
+        and the duty are derived again through the usual update chain, so an
+        edited order goes through exactly the same arithmetic a new one does.
+        """
+        self.write_edit(self.edit_ferment_volume, distilling.ferment_volume)
+        self.edit_ferment_type.setText(distilling.ferment_type)
+        self.write_edit(self.edit_alcohol_volume, distilling.alcohol_volume)
+        self.write_edit(self.edit_alcohol_percentage, distilling.alcohol_percentage)
+        self.write_edit(self.edit_alcohol_temperature, distilling.alcohol_temperature)
+        self.update_values()
 
     def normalize_percentage(self):
         # TEMPERATURE_TABLE is tabulated at 0.1 % and 1 ˚C granularity. Pick the

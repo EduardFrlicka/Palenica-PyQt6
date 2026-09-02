@@ -1,12 +1,14 @@
-from PyQt6.QtWidgets import QTabBar, QHeaderView
+from PyQt6.QtWidgets import QTabBar, QHeaderView, QMenu
 from ui_py.distillings_tab_ui import Ui_DistillingsTab
 from PyQt6.QtWidgets import QStyledItemDelegate
-from PyQt6.QtCore import QModelIndex, Qt
+from PyQt6.QtCore import QModelIndex, QPoint, Qt
 from PyQt6.QtGui import QShowEvent
 from sqlalchemy.orm import Session
 import db
+import messages
 from datetime import datetime, date
 from constants import DATE_FORMAT
+from dialogs.order_edit import OrderEditDialog, delete_order
 from models.order_model import OrderModelView, OrderSortFilterModel
 from models.delegates import date_delegate
 
@@ -17,12 +19,20 @@ class DistillingsTab(Ui_DistillingsTab, QTabBar):
         self.setupUi(self)
         self.loadData()
         self.seasonSelect.enable_empty(True)
+        self.order_table.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.order_table.customContextMenuRequested.connect(self.order_context_menu)
 
     def loadData(self):
+        """(Re)read the orders from the database.
+
+        The proxy is created once and kept: a reload after an edit or a delete
+        must not silently drop what the operator typed into the search fields.
+        """
         self.order_model = OrderModelView(self)
-        self.filter_model = OrderSortFilterModel(self)
+        if getattr(self, "filter_model", None) is None:
+            self.filter_model = OrderSortFilterModel(self)
+            self.order_table.setModel(self.filter_model)
         self.filter_model.setSourceModel(self.order_model)
-        self.order_table.setModel(self.filter_model)
         self.order_table.setColumnHidden(0, True)
         self.order_table.setColumnHidden(1, True)
         self.order_table.setItemDelegateForColumn(4, date_delegate)
@@ -54,10 +64,36 @@ class DistillingsTab(Ui_DistillingsTab, QTabBar):
                 header.resizeSection(i, header.sectionSize(i) + extra)
 
     def order_selected(self, index: QModelIndex):
+        """Open the double-clicked order in the distilling form for editing."""
         order_id = index.siblingAtColumn(0).data()
-        print("selected", order_id)
-        with db.get_session() as session:
-            self.order = session.query(db.Order).get(order_id)
+        if order_id is None:
+            return
+
+        OrderEditDialog(order_id, self).exec()
+        self.loadData()
+
+    def order_context_menu(self, position: QPoint):
+        index = self.order_table.indexAt(position)
+        if not index.isValid():
+            return
+
+        menu = QMenu(self)
+        edit_action = menu.addAction(messages.ORDER_MENU_EDIT)
+        delete_action = menu.addAction(messages.ORDER_MENU_DELETE)
+        chosen = menu.exec(self.order_table.viewport().mapToGlobal(position))
+
+        if chosen == edit_action:
+            self.order_selected(index)
+        elif chosen == delete_action:
+            self.order_delete(index)
+
+    def order_delete(self, index: QModelIndex):
+        order_id = index.siblingAtColumn(0).data()
+        if order_id is None:
+            return
+
+        if delete_order(order_id):
+            self.loadData()
 
     def mark_edited(self, text: str):
         self.filter_model.filterMark(text)
