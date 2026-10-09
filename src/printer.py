@@ -414,8 +414,8 @@ class OrderPrinter:
                 r"Teplota destilátu (˚C)",
                 r"Objemové % liehu pri 20˚C",
                 r"Množstvo vyrobeného a prevzatého destilátu v la",
-                f"Spotrebná daň {order.constants.lower_tax:g} €/la",
-                f"Spotrebná daň {order.constants.full_tax:g} €/la",
+                f"Spotrebná daň so sadzbou ({order.constants.lower_tax:g} €/la)",
+                f"Spotrebná daň so sadzbou ({order.constants.full_tax:g} €/la)",
                 r"Suma spotrebnej dane v € zaplatenej pestovateľom",
             ]
 
