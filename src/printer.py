@@ -67,6 +67,15 @@ class OrderPrinter:
                 )
                 for col in self.cols
             ]
+
+            # if all columns fit unwrapped, use their full width instead of the even share
+            natural_cols_size = [
+                max([self.painter.boundingRect(self.rect, text, WORD_WRAP).size().width() for text in col]) + 2 * TABLE_HORIZONTAL_MARGIN
+                for col in self.cols
+            ]
+            if sum(natural_cols_size) <= self.rect.width():
+                self.cols_size = natural_cols_size
+
             aditional_space = (self.rect.width() - sum(self.cols_size)) / len(self.cols_size)
             if self.stretch:
                 self.cols_size = [col + aditional_space for col in self.cols_size]
