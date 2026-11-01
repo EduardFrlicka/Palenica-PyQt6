@@ -67,6 +67,15 @@ class OrderPrinter:
                 )
                 for col in self.cols
             ]
+
+            # if all columns fit unwrapped, use their full width instead of the even share
+            natural_cols_size = [
+                max([self.painter.boundingRect(self.rect, text, WORD_WRAP).size().width() for text in col]) + 2 * TABLE_HORIZONTAL_MARGIN
+                for col in self.cols
+            ]
+            if sum(natural_cols_size) <= self.rect.width():
+                self.cols_size = natural_cols_size
+
             aditional_space = (self.rect.width() - sum(self.cols_size)) / len(self.cols_size)
             if self.stretch:
                 self.cols_size = [col + aditional_space for col in self.cols_size]
@@ -414,8 +423,8 @@ class OrderPrinter:
                 r"Teplota destilátu (˚C)",
                 r"Objemové % liehu pri 20˚C",
                 r"Množstvo vyrobeného a prevzatého destilátu v la",
-                r"Spotrebná daň s niššou sadzbou",
-                r"Spotrebná dan s vyššou sadzbou",
+                f"Spotrebná daň so sadzbou ({order.constants.lower_tax:g} €/la)",
+                f"Spotrebná daň so sadzbou ({order.constants.full_tax:g} €/la)",
                 r"Suma spotrebnej dane v € zaplatenej pestovateľom",
             ]
 
