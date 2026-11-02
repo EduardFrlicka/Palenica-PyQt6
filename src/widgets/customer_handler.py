@@ -36,6 +36,7 @@ class CustomerHandler(QWidget, Ui_CustomerHandler):
         self.customer = None
         self.la = None
         self.label_manual_customer.hide()
+        self.label_la_limit_exceeded.hide()
 
     def manual_customer(self):
         self.is_manual = True

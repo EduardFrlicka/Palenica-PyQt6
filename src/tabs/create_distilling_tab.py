@@ -17,7 +17,7 @@ from datetime import date
 import config
 import db
 import messages
-from dialogs.alert import alert
+from dialogs.alert import alert, confirm
 import calculations
 
 
@@ -35,6 +35,7 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
         self.label_full_tax.setText(f"Suma spotrebnej dane {self.calculation_constants.full_tax:.3f} €/la")
         self.reset_button_date.clicked.connect(self.date_reset)
         self.button_add_distilling_input.clicked.connect(self.add_distilling_input)
+        self.customer_handler.la_changed.connect(self.distribute_la)
         self.setWindowModality(Qt.WindowModality.WindowModal)
         self.rle_operating_costs.setDefault(0.0)
         self.rle_operating_costs.textEdited.connect(self.update_costs)
@@ -69,6 +70,13 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
                 distilling_input.update_tax()
             customer_la += distilling_input.alcohol_volume_la
         self.customer_handler.le_la_after.setText(f"{customer_la:.2f}")
+
+        la_limit = self.calculation_constants.lower_tax_la_limit
+        if customer_la > la_limit:
+            self.customer_handler.label_la_limit_exceeded.setText(messages.LA_LIMIT_EXCEEDED_LABEL.format(la_limit))
+            self.customer_handler.label_la_limit_exceeded.show()
+        else:
+            self.customer_handler.label_la_limit_exceeded.hide()
 
     def update_dilute_table(self):
         # self.diluteTable.setColumnCount(len(calculations.DILUTE_TARGETS))
@@ -224,6 +232,9 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
                 return None
             distillings.append(distilling)
 
+        if not self.confirm_la_limit(distilling_inputs):
+            return None
+
         # marked = session.query(db.Order).join(db.ProductionLine, db.Order.production_line_id == db.ProductionLine.id).filter(
         #     db.Order.mark == self.le_mark.text()).filter(db.ProductionLine == production_line).first()
         # if marked:
@@ -247,6 +258,22 @@ class CreateDistillingTab(Ui_CreateDistillingTab, QTabBar):
         )
 
         return order
+
+    def confirm_la_limit(self, distilling_inputs: list[DistillingInput]) -> bool:
+        customer_la = 0
+        if not self.customer_handler.is_manual and self.customer_handler.la:
+            customer_la = self.customer_handler.la
+        customer_la += sum(distilling_input.alcohol_volume_la for distilling_input in distilling_inputs)
+
+        la_limit = self.calculation_constants.lower_tax_la_limit
+        if customer_la <= la_limit:
+            return True
+
+        return confirm(
+            messages.LA_LIMIT_EXCEEDED.format(la_limit, customer_la),
+            messages.LA_LIMIT_CONTINUE,
+            messages.LA_LIMIT_BACK,
+        )
 
     def save_order(self, order: db.Order, session: Session = None):
         if self.customer_handler.is_manual:
