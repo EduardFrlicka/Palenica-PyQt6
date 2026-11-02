@@ -79,13 +79,34 @@ def _toml_value(value) -> str:
     return json.dumps(value, ensure_ascii=False)
 
 
-def _write_default(path) -> None:
+def _write(path, data: dict) -> None:
     with open(path, "w", encoding="utf-8") as conf_file:
-        for section_name, section in default_config.items():
+        for section_name, section in data.items():
             conf_file.write(f"[{section_name}]\n")
             for key, value in section.items():
                 conf_file.write(f"{key} = {_toml_value(value)}\n")
             conf_file.write("\n")
+
+
+def _write_default(path) -> None:
+    _write(path, default_config)
+
+
+def save(changes: dict) -> None:
+    """Write changed settings to config.toml, keeping everything else in it.
+
+    changes has the same shape as the file: {section: {key: value}}. The
+    in-memory config is updated too, so settings read at use time (printer
+    copies) apply without a restart.
+    """
+    data = {}
+    if config_path.exists():
+        with open(config_path, "rb") as conf_file:
+            data = tomli.load(conf_file)
+    for section_name, section in changes.items():
+        data.setdefault(section_name, {}).update(section)
+    _write(config_path, data)
+    config.update(changes)
 
 
 config = Config()

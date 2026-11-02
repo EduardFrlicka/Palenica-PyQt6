@@ -30,7 +30,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             ("seasons", "seasons_tab", "Sezóny", SeasonsTab),
             ("customers", "customers_tab", "Zákazníci", CustomersTab),
             ("constants", "constants_tab", "Konštanty", ConstantsTab),
-            ("config", "config_tab", "Konfigurácia", ConfigTab),
+            ("config", "config_tab", "Nastavenia", ConfigTab),
         ]
         enabled_tabs = config.get("main_window", "tabs", default=[])
 
