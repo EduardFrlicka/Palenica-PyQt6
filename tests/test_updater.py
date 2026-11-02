@@ -67,6 +67,153 @@ def test_prereleases_sort_below_their_release():
     assert version.parse("1.2.0-rc1") < version.parse("1.2.0")
 
 
+@pytest.mark.parametrize(
+    "latest, current",
+    [
+        # Build numbers compare as numbers, not as text.
+        ("v1.4.0-10", "v1.4.0-9"),
+        ("v1.4.0-100", "v1.4.0-99"),
+        ("v1.4.0", "v1.4.0-37"),
+        ("v1.4.0-1", "v1.3.2"),
+    ],
+)
+def test_beta_ordering(latest, current):
+    assert version.is_newer(latest, current)
+    assert not version.is_newer(current, latest)
+
+
+@pytest.mark.parametrize("tag, expected", [("v1.4.0-37", True), ("1.4.0-rc1", True), ("v1.4.0", False), ("", False)])
+def test_is_prerelease(tag, expected):
+    assert version.is_prerelease(tag) is expected
+
+
+# ---------------------------------------------------------------------------
+# repository URL
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://github.com/EduardFrlicka/Palenica-PyQt6",
+        "https://github.com/EduardFrlicka/Palenica-PyQt6/",
+        "https://github.com/EduardFrlicka/Palenica-PyQt6.git",
+        "https://github.com/EduardFrlicka/Palenica-PyQt6/releases",
+        "https://api.github.com/repos/EduardFrlicka/Palenica-PyQt6",
+        # What every config written before allow_beta holds.
+        "https://api.github.com/repos/EduardFrlicka/Palenica-PyQt6/releases/latest",
+    ],
+)
+def test_repository_from_url(url):
+    repo = release.Repository.from_url(url)
+    assert repo == release.Repository("EduardFrlicka", "Palenica-PyQt6")
+    assert repo.releases_url == "https://api.github.com/repos/EduardFrlicka/Palenica-PyQt6/releases"
+
+
+@pytest.mark.parametrize(
+    "url",
+    ["", "https://example.com/EduardFrlicka/Palenica-PyQt6", "https://github.com/EduardFrlicka", "https://api.github.com/users/x/y"],
+)
+def test_repository_from_url_rejects_other_urls(url):
+    with pytest.raises(UpdateError):
+        release.Repository.from_url(url)
+
+
+# ---------------------------------------------------------------------------
+# choosing a release
+# ---------------------------------------------------------------------------
+
+ASSET = "palenica-windows-x86_64.zip"
+
+
+def _rel(tag, prerelease=None, asset=ASSET):
+    payload = {"tag_name": tag, "assets": [{"name": asset, "browser_download_url": f"https://example/{tag}"}]}
+    if prerelease is not None:
+        payload["prerelease"] = prerelease
+    return release.Release.from_payload(payload)
+
+
+def _pick(releases, current, allow_beta):
+    chosen = release.pick(releases, current, allow_beta, [ASSET])
+    return chosen.tag if chosen else None
+
+
+RELEASES = [_rel("v1.4.0-12"), _rel("v1.4.0-3"), _rel("v1.3.0"), _rel("v1.2.0")]
+
+
+@pytest.mark.parametrize(
+    "current, allow_beta, expected",
+    [
+        # Stable users only ever see stable releases.
+        ("v1.2.0", False, "v1.3.0"),
+        ("v1.3.0", False, None),
+        # Betas allowed: the highest version, beta or not.
+        ("v1.3.0", True, "v1.4.0-12"),
+        ("v1.4.0-3", True, "v1.4.0-12"),
+        ("v1.4.0-12", True, None),
+        # Betas switched off while on one: back to the latest stable.
+        ("v1.4.0-12", False, "v1.3.0"),
+        ("v1.4.0-3", False, "v1.3.0"),
+        # No version.txt: install something.
+        ("", False, "v1.3.0"),
+        ("", True, "v1.4.0-12"),
+    ],
+)
+def test_pick(current, allow_beta, expected):
+    assert _pick(RELEASES, current, allow_beta) == expected
+
+
+def test_pick_prefers_the_stable_release_over_its_betas():
+    releases = [_rel("v1.4.0"), *RELEASES]
+    assert _pick(releases, "v1.4.0-12", True) == "v1.4.0"
+    assert _pick(releases, "v1.4.0-12", False) == "v1.4.0"
+
+
+def test_pick_stays_on_a_beta_when_there_is_no_stable_release():
+    assert _pick([_rel("v1.0.0-1")], "v1.0.0-1", False) is None
+
+
+def test_pick_skips_releases_without_a_build_for_this_platform():
+    releases = [_rel("v1.5.0", asset="source.tar.gz"), *RELEASES]
+    assert _pick(releases, "v1.2.0", False) == "v1.3.0"
+
+
+def test_the_github_prerelease_flag_alone_marks_a_beta():
+    releases = [_rel("v1.5.0", prerelease=True), _rel("v1.3.0")]
+    assert _pick(releases, "v1.3.0", False) is None
+    assert _pick(releases, "v1.3.0", True) == "v1.5.0"
+
+
+def test_fetch_all_lists_releases_without_drafts(monkeypatch):
+    payload = [
+        {"tag_name": "v1.4.0-12", "prerelease": True, "assets": []},
+        {"tag_name": "v1.5.0", "draft": True, "assets": []},
+        {"tag_name": "v1.3.0", "prerelease": False, "assets": []},
+    ]
+
+    class _Response:
+        status_code = 200
+        text = ""
+
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return payload
+
+    calls = {}
+
+    def fake_get(url, **kwargs):
+        calls["url"] = url
+        return _Response()
+
+    monkeypatch.setattr(release.requests, "get", fake_get)
+    found = release.Release.fetch_all(release.Repository("o", "r"))
+
+    assert calls["url"] == "https://api.github.com/repos/o/r/releases"
+    assert [(r.tag, r.prerelease) for r in found] == [("v1.4.0-12", True), ("v1.3.0", False)]
+
+
 # ---------------------------------------------------------------------------
 # asset selection
 # ---------------------------------------------------------------------------
