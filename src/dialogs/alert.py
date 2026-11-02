@@ -41,3 +41,18 @@ def warning(text: str):
     msgBox.buttonClicked.connect(msgBox.clickedButton)
 
     msgBox.exec()
+
+
+def confirm(text: str, accept_text: str, reject_text: str) -> bool:
+    msgBox = QMessageBox()
+    msgBox.setIcon(QMessageBox.Icon.Warning)
+    msgBox.setText(text)
+    msgBox.setWindowTitle("Varovanie")
+    accept_button = msgBox.addButton(accept_text, QMessageBox.ButtonRole.AcceptRole)
+    reject_button = msgBox.addButton(reject_text, QMessageBox.ButtonRole.RejectRole)
+    msgBox.setDefaultButton(reject_button)
+    msgBox.setEscapeButton(reject_button)
+
+    msgBox.exec()
+
+    return msgBox.clickedButton() == accept_button
