@@ -19,6 +19,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         from tabs.customers_tab import CustomersTab
         from tabs.seasons_tab import SeasonsTab
         from tabs.constants_tab import ConstantsTab
+        from tabs.config_tab import ConfigTab
 
         self.setupUi(self)
         self.setWindowState(Qt.WindowState.WindowMaximized)
@@ -29,6 +30,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             ("seasons", "seasons_tab", "Sezóny", SeasonsTab),
             ("customers", "customers_tab", "Zákazníci", CustomersTab),
             ("constants", "constants_tab", "Konštanty", ConstantsTab),
+            ("config", "config_tab", "Konfigurácia", ConfigTab),
         ]
         enabled_tabs = config.get("main_window", "tabs", default=[])
 

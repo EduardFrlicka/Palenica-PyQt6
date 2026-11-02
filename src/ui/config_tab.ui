@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ConfigTab</class>
+ <widget class="QWidget" name="ConfigTab">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>640</width>
+    <height>480</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="label_path">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="textInteractionFlags">
+      <set>Qt::TextInteractionFlag::TextSelectableByMouse</set>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPlainTextEdit" name="text_config">
+     <property name="lineWrapMode">
+      <enum>QPlainTextEdit::LineWrapMode::NoWrap</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label_info">
+       <property name="text">
+        <string>Zmeny sa prejavia po reštarte aplikácie.</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="button_reload">
+       <property name="text">
+        <string>Načítať znova</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="button_save">
+       <property name="text">
+        <string>Uložiť</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>button_save</sender>
+   <signal>clicked()</signal>
+   <receiver>ConfigTab</receiver>
+   <slot>saveData()</slot>
+  </connection>
+  <connection>
+   <sender>button_reload</sender>
+   <signal>clicked()</signal>
+   <receiver>ConfigTab</receiver>
+   <slot>loadData()</slot>
+  </connection>
+  <connection>
+   <sender>text_config</sender>
+   <signal>textChanged()</signal>
+   <receiver>ConfigTab</receiver>
+   <slot>valueEdited()</slot>
+  </connection>
+ </connections>
+ <slots>
+  <slot>valueEdited()</slot>
+  <slot>saveData()</slot>
+  <slot>loadData()</slot>
+ </slots>
+</ui>

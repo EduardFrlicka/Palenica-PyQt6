@@ -56,3 +56,13 @@ def confirm(text: str, accept_text: str, reject_text: str) -> bool:
     msgBox.exec()
 
     return msgBox.clickedButton() == accept_button
+
+
+def info(text: str):
+    msgBox = QMessageBox()
+    msgBox.setIcon(QMessageBox.Icon.Information)
+    msgBox.setText(text)
+    msgBox.setWindowTitle("Informácia")
+    msgBox.setStandardButtons(QMessageBox.StandardButton.Ok)
+
+    msgBox.exec()
