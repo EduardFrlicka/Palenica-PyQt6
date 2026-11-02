@@ -1,9 +1,11 @@
-from PyQt6.QtWidgets import QWidget
+from PyQt6.QtWidgets import QApplication, QWidget
 
 import config as config_module
 import messages
+import paths
 from config import config
-from dialogs.alert import alert, info
+from dialogs.alert import alert, confirm, info
+from updater import install
 from ui_py.config_tab_ui import Ui_ConfigTab
 
 
@@ -57,6 +59,19 @@ class ConfigTab(Ui_ConfigTab, QWidget):
             alert(messages.CONFIG_WRITE_FAILED.format(e))
             return
 
+        restart_needed = values["updater"] != self.saved_values["updater"]
         self.saved_values = values
         self.updateSaveButton()
-        info(messages.CONFIG_SAVED)
+
+        if not restart_needed:
+            info(messages.CONFIG_SAVED)
+        elif confirm(messages.CONFIG_RESTART, messages.CONFIG_RESTART_NOW, messages.CONFIG_RESTART_LATER):
+            self.restartApp()
+
+    def restartApp(self):
+        try:
+            install.relaunch(install.app_command(paths.install_dir()), paths.install_dir())
+        except OSError as e:
+            alert(messages.CONFIG_RESTART_FAILED.format(e))
+            return
+        QApplication.quit()

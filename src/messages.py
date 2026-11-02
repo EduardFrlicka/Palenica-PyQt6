@@ -39,4 +39,12 @@ STARTUP_LOADING_TAB = "Načítavanie údajov: {}"
 STARTUP_DONE = "Hotovo"
 CONFIG_URL_EMPTY = "Adresa aktualizácií nesmie byť prázdna"
 CONFIG_WRITE_FAILED = "Nastavenia sa nepodarilo uložiť: {}"
-CONFIG_SAVED = "Nastavenia boli uložené.\nZmeny aktualizácií sa prejavia po reštarte aplikácie."
+CONFIG_SAVED = "Nastavenia boli uložené."
+CONFIG_RESTART = (
+    "Nastavenia boli uložené.\n"
+    "Zmeny aktualizácií sa prejavia po reštarte aplikácie.\n\n"
+    "Reštartovať aplikáciu teraz? Neuložené údaje v ostatných záložkách sa stratia."
+)
+CONFIG_RESTART_NOW = "Reštartovať"
+CONFIG_RESTART_LATER = "Neskôr"
+CONFIG_RESTART_FAILED = "Aplikáciu sa nepodarilo reštartovať: {}\nZatvorte ju a spustite znova."
