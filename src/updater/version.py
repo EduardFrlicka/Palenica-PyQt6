@@ -9,7 +9,8 @@ import re
 
 from .log import log
 
-# v1.2.3, 1.2.3, 1.2, 1.2.3-rc1, 1.2.3+build - anything else is not a version.
+# v1.2.3, 1.2.3, 1.2, 1.2.3-37, 1.2.3-rc1 - anything else is not a version.
+# A suffix marks a beta (prerelease) of the version in front of it.
 _TAG = re.compile(r"^v?(?P<release>\d+(?:\.\d+)*)(?:[-+](?P<pre>.+))?$")
 
 
@@ -22,10 +23,23 @@ def parse(tag: str) -> tuple | None:
     release = tuple(int(part) for part in match.group("release").split("."))
     pre = match.group("pre")
 
-    # A prerelease sorts below the release it leads up to: 1.2.0-rc1 < 1.2.0.
-    # Prereleases themselves compare as text, so rc10 lands before rc2 - fine
-    # while releases stay plain, and never worse than not comparing at all.
-    return (release, 0, pre) if pre else (release, 1, "")
+    # A prerelease sorts below the release it leads up to: 1.2.0-37 < 1.2.0.
+    return (release, 0, _pre_key(pre)) if pre else (release, 1, ())
+
+
+def _pre_key(pre: str) -> tuple:
+    """Compare a prerelease suffix piece by piece, numbers as numbers.
+
+    As plain text "10" sorts before "9", so build 1.2.0-10 would count as older
+    than 1.2.0-9. Numbers also sort before words, as semver orders them.
+    """
+    return tuple((0, int(part), "") if part.isdigit() else (1, 0, part) for part in re.split(r"[.\-]", pre))
+
+
+def is_prerelease(tag: str) -> bool:
+    """True for a beta tag such as 1.4.0-37."""
+    match = _TAG.match((tag or "").strip())
+    return bool(match and match.group("pre"))
 
 
 def is_newer(latest: str, current: str) -> bool:

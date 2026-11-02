@@ -18,7 +18,12 @@ default_config = {
     },
     "updater": {
         "allow_updates": True,
-        "url": "https://api.github.com/repos/EduardFrlicka/Palenica-PyQt6/releases/latest",
+        # The repository to update from. Any GitHub URL of it works; which API
+        # endpoint gets called is decided by the updater.
+        "url": "https://github.com/EduardFrlicka/Palenica-PyQt6",
+        # Also install beta releases (tags like v1.4.0-37), whichever version
+        # is highest. Switching it back off returns to the latest stable release.
+        "allow_beta": False,
         # Seconds to wait on GitHub. A slow network delays startup by at most
         # this much; the check is skipped on any failure.
         "timeout": 10,

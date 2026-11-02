@@ -16,11 +16,10 @@ import sys
 import paths
 
 from . import install as _install
-from . import version as _version
 from .errors import UpdateError
 from .install import cleanup_stale, read_version, write_version
 from .log import configure, log
-from .release import DEFAULT_TIMEOUT, Release, asset_names
+from .release import DEFAULT_TIMEOUT, Release, Repository, asset_names, pick
 
 __all__ = [
     "check_and_perform_update",
@@ -79,17 +78,24 @@ def _check_and_perform_update(on_download_start=None) -> bool:
         log.warning("No [updater] url configured")
         return False
 
-    timeout = config.get("updater", "timeout", default=DEFAULT_TIMEOUT)
-    release = Release.fetch(url, timeout)
-    current = read_version()
-    log.info("Latest version: %s, current version: %s", release.tag, current or "unknown")
-
-    if not _version.is_newer(release.tag, current):
-        return False
-
     names = _asset_names(config)
     if not names:
         log.info("No build is published for this platform (%s)", sys.platform)
+        return False
+
+    allow_beta = bool(config.get("updater", "allow_beta", default=False))
+    timeout = config.get("updater", "timeout", default=DEFAULT_TIMEOUT)
+    releases = Release.fetch_all(Repository.from_url(url), timeout)
+    current = read_version()
+
+    release = pick(releases, current, allow_beta, names)
+    log.info(
+        "Current version: %s, target: %s (betas %s)",
+        current or "unknown",
+        release.tag if release else "none",
+        "allowed" if allow_beta else "off",
+    )
+    if release is None:
         return False
 
     asset_url = release.find_asset(names)
